@@ -4,22 +4,22 @@
     <meta charset="UTF-8" />
     <!-- Tell browsers not to scale the viewport automatically -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simon HTML</title>
+    <title>SidePot - Self- Employed Planner for Tax & Retirement</title>
     <link rel="icon" href="favicon.ico" />
   </head>
   <body>
     <!-- Use header, main, and footer elements to give semantic structure -->
     <header>
-      <h1>Simon<sup>&reg;</sup></h1>
+      <h1>SidePot<sup>&reg;</sup></h1>
 
       <!-- Navigation elements -->
       <nav>
         <!-- Menu is a semantic alternative to <ul> that represents an interaction -->
         <menu>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="play.html">Play</a></li>
-          <li><a href="scores.html">Scores</a></li>
-          <li><a href="about.html">About</a></li>
+          <li><a href="#login">Login</a></li>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#planner">PLanner</a></li>
+          <li><a href="#contributions">Contributions</a></li>
         </menu>
       </nav>
 
@@ -28,6 +28,14 @@
     </header>
 
     <main>
+      <!-- login -->
+      <section id= "login">
+        <h2>Login</h2>
+        <div class="card"> Register / Login (email, password)</div>
+        <div class="card">What you can do: Pick Solo 401(k)/SEP IRA/Roth IRA, estimate taxes, track set-asides</div>
+        <div class="card">Live savings ticker (WebSocket): 'Someone just set aside $250 for Q3 taxes'</div>
+      </section>
+      
       <h1>Welcome to Simon</h1>
       <form method="get" action="play.html">
         <div>
