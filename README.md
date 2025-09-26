@@ -80,7 +80,7 @@ This commit includes the foundational HTML structure for the **SidePot** applica
 #### 🔹 `index.html` (Homepage)
 - Welcome message and login/register form
 - Platform overview with feature explanation
-- Parrot image added (`placeholder.jpg`)
+- Placeholder image added (`placeholder.jpg`)
 - Navigation menu linking to other pages
 - GitHub repo prominently linked in footer
 - Placeholder: WebSocket-based savings ticker
