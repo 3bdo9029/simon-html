@@ -16,10 +16,10 @@
       <nav>
         <!-- Menu is a semantic alternative to <ul> that represents an interaction -->
         <menu>
-          <li><a href="#login">Login</a></li>
-          <li><a href="#dashboard">Dashboard</a></li>
-          <li><a href="#planner">Planner</a></li>
-          <li><a href="#contributions">Contributions</a></li>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="planner.html">Planner</a></li>
+          <li><a href="contributions.html">Contributions</a></li>
         </menu>
       </nav>
 
@@ -46,36 +46,6 @@
         <button type="submit">Login</button>
         <button type="submit">Create</button>
       </form>
-
-        <!-- Dashboard -->
-      <section id="dashboard">
-        <h2>Dashboard</h2>
-        <div class="card">Pick a plan (Solo 401(k), SEP IRA, Roth IRA)</div>
-        <div class="card">Quarterly tax estimator</div>
-        <div class="card">Record a set-aside</div>
-        <div class="card">Your contributions (table: date, account, amount)</div>
-        <div class="card">Live feed & averages (WebSocket)</div>
-        <div class="card">Next deadline & reminders</div>
-      </section>
-
-      <!-- Planner -->
-      <section id="planner">
-        <h2>Planner (Tax & Retirement)</h2>
-        <div class="card">Inputs: income, expenses, filing status, state</div>
-        <div class="card">Results: est. set-aside %, $/month, contribution limits by plan</div>
-        <div class="card">FX helper (3rd-party API): convert invoice currency to USD</div>
-        <div class="card">Click ‘Record set-aside’</div>
-      </section>
-
-      <!-- Contributions -->
-      <section id="contributions">
-        <h2>Contributions & Live Feed</h2>
-        <div class="card">Contributions table (DB): date, type (tax/401k/IRA), amount</div>
-        <div class="card">Add contribution form</div>
-        <div class="card">Live feed (WebSocket): anonymized events, average set-aside today, simple chart</div>
-        <div class="card">Export CSV button</div>
-      </section>      
-    </main>
 
     <footer>
       <hr />
