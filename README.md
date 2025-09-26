@@ -1,83 +1,105 @@
-# Simon
+# Side Pot
 
-[My Notes](notes.md)
+---
 
-In 1978 Milton-Bradley, now Hasbro, released an electronic game named Simon. It was cutting edge at the time since there were so few electronic games, and all the cool kids had one.
-
-We are going to build a peer to peer multiplayer web application modeled after Simon. We will build it together by adding new functionality every time we learn a new technology. The example version of code and production deployment for each iteration are available to you. Your job will be to review the example and then deploy it to your production environment. The goal is to make you think about every line of code. Ask, "why is it done this way?" and "Is there a better way?". You can then take what you have learned, or even portions of the Simon code, and apply it to your Startup application.
-
-## 🚀 Specification Deliverable
-
-Simon is a simple game where you repeat a sequence of color flashes. The longer sequence you repeat the higher your score is.
-
-For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
-
-- [x] Proper use of Markdown
-- [x] A concise and compelling elevator pitch
-- [x] Description of key features
-- [x] Description of how you will use each technology
-- [x] One or more rough sketches of your application. Images must be embedded in this file using Markdown image references.
+## Specification Deliverable
 
 ### Elevator pitch
+When you’re self-employed, paychecks don’t automatically withhold taxes or fund retirement. **Side Pot** makes it simple: enter income and expenses to get a **monthly tax set-aside estimate**, see **basic contribution limits** for **Solo 401(k)**, **SEP IRA**, and **Roth IRA**, and **record what you actually set aside**. A small **real-time savings feed** (anonymized) shows others saving too, keeping you motivated.
 
-A mind is a beautiful thing, but it needs stimulation. Lights, color, sound, and action. Simon give you hours of fun as you complete to remember the longest sequence of colors. See if you can top the charts with you efforts. Receive automatic notification of how your friends are doing.
+> **Class disclaimer:** Educational demo only. **Not** tax or investment advice.
+
+---
 
 ### Design
 
-![Design](designDiagram.png)
+#### Mock
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+**Login / Landing**
 
-```mermaid
-sequenceDiagram
-    actor User
-    User->>Login: Enter login information
-    Login->>About: See about information
-    About-->>Login: Login
-    About->>About: Read inspirational quote
-    Login->>Play: Start game
-    Play->>Play: repeat sequences
-    Play->>Play: View other player's game notifications
-    Play-->>Login: Logout
-    Login-->>Scores: view high scores
-```
+![Side Pot – Login](docs/wireframes/sidepot-login.png)
+
+**Dashboard**
+
+![Side Pot – Dashboard](docs/wireframes/sidepot-dashboard.png)
+
+**Planner (Tax & Retirement)**
+
+![Side Pot – Planner](docs/wireframes/sidepot-planner.png)
+
+**Contributions & Live Feed**
+
+![Side Pot – Contributions](docs/wireframes/sidepot-contributions.png)
+
+#### Interaction overview (sequence)
+User → Frontend (React) → Backend (Express):
+1. Register/Login (JWT in HTTP-only cookie)
+2. Planner: POST `/api/planner/estimate` → returns `{percent, monthlySetAside}`
+3. Contributions: GET/POST/DELETE `/api/contributions`
+4. FX Helper: GET `/api/fx?base=EUR&amount=1000` (server calls free FX API)
+5. WebSocket: server emits `savings_event` → clients update live ticker
+
+---
 
 ### Key features
+- Secure login (register/login/logout) over HTTPS
+- **Tax set-aside estimator** (simple class formula; not advice)
+- **Plan picker** with concise notes: Solo 401(k), SEP IRA, Roth IRA
+- **Contribution tracker** for taxes and retirement accounts
+- **Live savings feed** (WebSocket): “Someone just set aside $X”
+- **3rd-party API**: FX conversion helper for foreign invoices (server-side proxy)
 
-- Login, logout, and register
-- See high scores
-- Receive notifications for other player's achievements
-- Play by repeating color sequences
-- See a description of the app
-- Read inspirational quotes
+---
 
 ### Technologies
+I am going to use the required technologies in the following ways:
 
-I am going to use the required technologies in the following ways.
+- **HTML** – Semantic app shell with accessible forms (labels, inputs, buttons).
+- **CSS** – Mobile-first responsive layout, good whitespace/contrast, small hover/active animations.
+- **React** – Components & routing for:
+  - `/` (Login), `/dashboard`, `/planner`, `/contributions`
+  - State for auth, planner inputs/results, contributions, WebSocket feed.
+- **Service (backend)** – Node/Express endpoints:
+  - **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`
+  - **Planner**: `POST /api/planner/estimate` (deterministic classroom formula), `GET /api/planner/limits` (static cards)
+  - **Contributions**: `GET /api/contributions`, `POST /api/contributions`, `DELETE /api/contributions/:id`
+  - **3rd-party API**: `GET /api/fx?base=EUR&amount=1000` (server fetch to free FX API; demonstrates a service I didn’t write)
+- **DB/Login** – Persist users (with bcrypt hash), profiles, and contributions (MongoDB/PostgreSQL, or a simple JSON DB for class). Register & login users; restrict contribution routes to authenticated users.
+- **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
-- **HTML** - Four different views, login/register controls, play, scoreboard, and about.
-- **CSS** - Complementary color scheme, responsive design, button highlighting during play.
-- **React** - Single page application with routing between views, reactive user controls, and state hooks.
-- **Service** - Endpoints for authentication, storing/retrieving scores. Third party call to get inspirational quotes.
-- **DB/Login** - Stores authentication and scores.
-- **WebSocket** - Broadcast user's game notifications.
 
-## 🚀 AWS deliverable
+## 🧩 Startup Deliverable: Initial HTML Structure for SidePot
 
-For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+### 📄 Overview
+This commit includes the foundational HTML structure for the **SidePot** application — a self-employed planner for taxes and retirement contributions. The layout is based on wireframes and assignment specifications, and provides semantic structure, multi-page navigation, and placeholders for future functionality.
 
-- [x] **Server deployed and accessible with custom domain name** - [My server link](https://simon.cs260.click).
+---
 
-## 🚀 HTML deliverable
+### ✅ What Was Added
 
-For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+#### 🔹 `index.html` (Homepage)
+- Welcome message and login/register form
+- Platform overview with feature explanation
+- Parrot image added (`placeholder.jpg`)
+- Navigation menu linking to other pages
+- GitHub repo prominently linked in footer
+- Placeholder: WebSocket-based savings ticker
+- Placeholder: Display of user email after login
 
-- [x] **HTML pages** - Four different pages. One for each view. `index.html` (Login), `play.html`, `scores.html`, and `about.html`.
-- [x] **Proper HTML element usage** - I spent a lot of time learning about elements. I used header, footer, main, nav, img, a, fieldset, input, button, form, and many more.
-- [x] **Links** - Links between views.
-- [x] **Text** - About page has text.
-- [x] **3rd party API placeholder** - About page has a place to display an inspirational quote.
-- [x] **Images** - Image is displayed on the about page.
-- [x] **Login placeholder** - Placeholder for auth on the login page.
-- [x] **DB data placeholder** - High scores displayed on scores page.
-- [x] **WebSocket placeholder** - The play page has a text area that will show what other user notifications.
+#### 🔹 `dashboard.html`
+- Placeholder UI for plan selection (Solo 401(k), SEP IRA, Roth IRA)
+- Quarterly tax estimator
+- Contribution table (DB placeholder)
+- WebSocket live feed
+- Next deadline and reminder sections
+
+#### 🔹 `planner.html`
+- Inputs: income, filing status, state, expenses
+- Estimated set-aside percentage and plan limits
+- 3rd-party API placeholder for FX conversion
+- "Record set-aside" interface stub
+
+#### 🔹 `contributions.html`
+- Contribution form and table (database placeholder)
+- Live feed of anonymized activity (WebSocket placeholder)
+- Button to export contributions as CSV
