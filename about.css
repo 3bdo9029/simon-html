@@ -1,3 +1,4 @@
+/* about.css — styles for Simon About page */
 /* Basic variables (light mode) */
 :root{
   --bg: #f8fafc;          /* slate-50 */
@@ -95,3 +96,69 @@ nav li a:focus-visible{
   transform: translateY(-1px);
 }
 nav li a:active{ transform: translateY(0); }
+
+/* Highlight current page — this file is for about.html */
+nav a[href$="about.html"]{
+  background: var(--accent);
+  color: var(--accent-contrast) !important;
+}
+
+/* Picture box */
+.picture-box{
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.picture-box img{
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Paragraphs */
+main p{
+  margin: 0 0 1rem;
+  color: var(--text);
+}
+main p + p{ margin-top: 0.5rem; }
+main p:last-child{ margin-bottom: 0; }
+
+/* Quote block */
+#quote{
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.1rem 1rem 1.1rem;
+  border-left: 4px solid var(--accent);
+  background: color-mix(in oklab, var(--accent) 7%, var(--card));
+  border-radius: 8px;
+}
+#quote > div:first-child{
+  font-weight: 600;
+}
+#quote > div:last-child{
+  color: var(--muted);
+  margin-top: 0.35rem;
+  font-style: italic;
+}
+
+/* Footer */
+.text-reset{ color: inherit; }
+footer a{ color: var(--accent); }
+footer a:hover{ text-decoration: underline; }
+
+/* Accessibility focus ring */
+:focus-visible{
+  outline: 3px solid color-mix(in oklab, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Small screens */
+@media (max-width: 600px){
+  nav li a{ padding: 0.55rem 0.8rem; }
+  #quote{ padding: 0.9rem; }
+}
