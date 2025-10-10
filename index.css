@@ -70,7 +70,7 @@ nav li a{
   align-items: center;
   justify-content: center;
   text-align: center;
-  white-space: nowrap;
+  white-space: wrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: #000000;
