@@ -55,7 +55,11 @@ nav menu{
   display: flex;
   gap: 6px;
   padding: 6px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+}
+
+nav li{
+  flex: 0 0 auto;
 }
 
 nav li a{
