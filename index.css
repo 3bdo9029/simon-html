@@ -14,7 +14,7 @@ body{
   -moz-osx-font-smoothing: grayscale;
 }
 img{ max-width: 100%; height: auto; display: block; }
-a{ color: #2563eb; text-decoration: none; }
+a{ color: #ffffff; text-decoration: none; }
 a:hover{ text-decoration: underline; }
 menu, ul, ol{ list-style: none; padding: 0; margin: 0; }
 hr{ border: 0; height: 1px; background: #e5e7eb; }
