@@ -146,7 +146,7 @@ button:active{ transform: translateY(0); }
 /* Make the second button outline style */
 button + button{
   background: #ffffff;
-  color: #2563eb;
+  color: #ffffff;
   border-color: #c7d2fe;
   box-shadow: 0 6px 18px rgba(2, 6, 23, .05);
 }
