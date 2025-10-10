@@ -76,6 +76,7 @@ nav li a{
   text-overflow: ellipsis;
   color: #000000;
   transition: transform .12s ease, background-color .12s ease, color .12s ease;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 nav li a:hover,
@@ -86,7 +87,7 @@ nav li a:focus-visible{
   outline: none;
 }
 
-/* ✅ Highlight current page: index.html */
+/* Highlight current page: index.html */
 nav a[href$="index.html"]{
   background: #2563eb;
   color: #ffffff;
