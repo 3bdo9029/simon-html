@@ -25,152 +25,188 @@
   <h2>Dashboard</h2>
   <!-- Live feed -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-live">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-live">
       <span class="icon">📡</span>
-      <span>Live feed & averages (WebSocket)</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Live feed & averages (WebSocket)</span>
+
+      <button class="menu-trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-live">⋯</button>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+
+      <div class="dropdown" id="menu-live" role="menu" hidden>
+        <button role="menuitem" data-action="pause">Pause stream</button>
+        <button role="menuitem" data-action="refresh">Refresh</button>
+        <hr>
+        <button role="menuitem" data-action="popout">Pop out</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-live" hidden>
       <div class="inset">
         <label class="pill"><input type="checkbox" checked> Live updates</label>
         <label class="pill"><input type="checkbox"> Show 7-day avg</label>
         <label class="pill"><input type="checkbox"> Show 30-day avg</label>
       </div>
-      <div class="actions">
-        <button>Apply</button>
-      </div>
+      <div class="actions"><button>Apply</button></div>
     </div>
   </section>
 
   <!-- Deadlines -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-deadlines">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-deadlines">
       <span class="icon">⏰</span>
-      <span>Next deadline & reminders</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Next deadline & reminders</span>
+
+      <button class="menu-trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-deadlines">⋯</button>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+
+      <div class="dropdown" id="menu-deadlines" role="menu" hidden>
+        <button role="menuitem" data-action="add-reminder">Add reminder</button>
+        <button role="menuitem" data-action="sync-calendar">Sync to calendar</button>
+        <hr>
+        <button role="menuitem" data-action="help-deadlines">Help</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-deadlines" hidden>
       <div class="inset">
-        <label class="field">Next due date
-          <input type="date">
-        </label>
+        <label class="field">Next due date <input type="date"></label>
         <label class="field">Notify me
-          <select>
-            <option>3 days before</option>
-            <option>1 week before</option>
-            <option>2 weeks before</option>
-          </select>
+          <select><option>3 days before</option><option>1 week before</option><option>2 weeks before</option></select>
         </label>
       </div>
-      <div class="actions">
-        <button>Set reminder</button>
-      </div>
+      <div class="actions"><button>Set reminder</button></div>
     </div>
   </section>
 
   <!-- Pick a plan -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-plan">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-plan">
       <span class="icon">🧭</span>
-      <span>Pick a plan (Solo 401(k), SEP IRA, Roth IRA)</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Pick a plan (Solo 401(k), SEP IRA, Roth IRA)</span>
+
+      <!-- kebab trigger -->
+      <button class="menu-trigger" aria-label="More actions"
+              aria-haspopup="menu" aria-expanded="false" aria-controls="menu-plan">
+        ⋯
+      </button>
+
+      <!-- caret -->
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+      </svg>
+
+      <!-- dropdown menu -->
+      <div class="dropdown" id="menu-plan" role="menu" hidden>
+        <button role="menuitem" data-action="reset-plan">Reset selection</button>
+        <button role="menuitem" data-action="help-plan">Help / Docs</button>
+        <hr>
+        <button role="menuitem" data-action="remove-card">Hide from dashboard</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-plan" hidden>
       <div class="inset">
         <label class="pill"><input type="radio" name="plan" value="solo401k"> Solo 401(k)</label>
         <label class="pill"><input type="radio" name="plan" value="sep"> SEP IRA</label>
         <label class="pill"><input type="radio" name="plan" value="roth"> Roth IRA</label>
       </div>
-      <div class="actions">
-        <button>Save selection</button>
-      </div>
+      <div class="actions"><button>Save selection</button></div>
     </div>
   </section>
 
-  <!-- Quarterly tax estimator -->
+  <!-- Estimator -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-estimator">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-estimator">
       <span class="icon">💸</span>
-      <span>Quarterly tax estimator</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Quarterly tax estimator</span>
+
+      <button class="menu-trigger" aria-label="More actions"
+              aria-haspopup="menu" aria-expanded="false" aria-controls="menu-estimator">⋯</button>
+
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+
+      <div class="dropdown" id="menu-estimator" role="menu" hidden>
+        <button role="menuitem" data-action="history">View history</button>
+        <button role="menuitem" data-action="clear-estimator">Clear inputs</button>
+        <hr>
+        <button role="menuitem" data-action="help-estimator">Help</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-estimator" hidden>
       <div class="inset">
-        <label class="field">Quarter
-          <select>
-            <option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option>
-          </select>
-        </label>
-        <label class="field">Estimated net income
-          <input type="number" placeholder="e.g., 24000">
-        </label>
-        <label class="field">% set-aside
-          <input type="number" placeholder="e.g., 30">
-        </label>
+        <label class="field">Quarter <select><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select></label>
+        <label class="field">Estimated net income <input type="number" placeholder="e.g., 24000"></label>
+        <label class="field">% set-aside <input type="number" placeholder="e.g., 30"></label>
       </div>
-      <div class="actions">
-        <button>Estimate</button>
-      </div>
+      <div class="actions"><button>Estimate</button></div>
     </div>
   </section>
 
   <!-- Record a set-aside -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-record">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-record">
       <span class="icon">📝</span>
-      <span>Record a set-aside</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Record a set-aside</span>
+
+      <button class="menu-trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-record">⋯</button>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+
+      <div class="dropdown" id="menu-record" role="menu" hidden>
+        <button role="menuitem" data-action="quick-100">Quick add $100</button>
+        <button role="menuitem" data-action="quick-500">Quick add $500</button>
+        <hr>
+        <button role="menuitem" data-action="undo-last">Undo last</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-record" hidden>
       <div class="inset">
-        <label class="field">Amount
-          <input type="number" placeholder="e.g., 500">
-        </label>
-        <label class="field">Date
-          <input type="date">
-        </label>
+        <label class="field">Amount <input type="number" placeholder="e.g., 500"></label>
+        <label class="field">Date <input type="date"></label>
         <label class="field">Account
-          <select>
-            <option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option>
-          </select>
+          <select><option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option></select>
         </label>
       </div>
-      <div class="actions">
-        <button>Save</button>
-      </div>
+      <div class="actions"><button>Save</button></div>
     </div>
   </section>
 
-  <!-- Contributions table -->
+  <!-- Contributions -->
   <section class="dash-item">
-    <button class="dash-card" aria-expanded="false" aria-controls="panel-contribs">
+    <div class="dash-card" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="panel-contribs">
       <span class="icon">📊</span>
-      <span>Your contributions (table: date, account, amount)</span>
-      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
-    </button>
+      <span class="label">Your contributions (table: date, account, amount)</span>
+
+      <button class="menu-trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-contribs">⋯</button>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+
+      <div class="dropdown" id="menu-contribs" role="menu" hidden>
+        <button role="menuitem" data-action="export-csv">Export CSV</button>
+        <button role="menuitem" data-action="export-pdf">Export PDF</button>
+        <hr>
+        <button role="menuitem" data-action="columns">Column preferences</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-contribs" hidden>
       <div class="inset">
-        <label class="field">From
-          <input type="date">
-        </label>
-        <label class="field">To
-          <input type="date">
-        </label>
+        <label class="field">From <input type="date"></label>
+        <label class="field">To <input type="date"></label>
         <label class="field">Account
-          <select>
-            <option>All</option><option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option>
-          </select>
+          <select><option>All</option><option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option></select>
         </label>
       </div>
-      <div class="actions">
-        <button>Filter</button>
-        <button class="secondary">Export CSV</button>
-      </div>
+      <div class="actions"><button>Filter</button><button class="secondary">Export CSV</button></div>
     </div>
   </section>
 </main>
-
-
   <footer>
     <hr />
     <span class="text-reset">By Abe Farghali</span><br />
