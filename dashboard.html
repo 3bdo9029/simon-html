@@ -21,15 +21,155 @@
     <hr />
   </header>
 
-  <main>
-    <h2>Dashboard</h2>
-    <div class="dashboard-card">Pick a plan (Solo 401(k), SEP IRA, Roth IRA)</div>
-    <div class="dashboard-card">Quarterly tax estimator</div>
-    <div class="dashboard-card">Record a set-aside</div>
-    <div class="dashboard-card">Your contributions (table: date, account, amount)</div>
-    <div class="dashboard-card">Live feed & averages (WebSocket)</div>
-    <div class="dashboard-card">Next deadline & reminders</div>
-  </main>
+<main>
+  <h2>Dashboard</h2>
+  <!-- Live feed -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-live">
+      <span class="icon">📡</span>
+      <span>Live feed & averages (WebSocket)</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-live" hidden>
+      <div class="inset">
+        <label class="pill"><input type="checkbox" checked> Live updates</label>
+        <label class="pill"><input type="checkbox"> Show 7-day avg</label>
+        <label class="pill"><input type="checkbox"> Show 30-day avg</label>
+      </div>
+      <div class="actions">
+        <button>Apply</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Deadlines -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-deadlines">
+      <span class="icon">⏰</span>
+      <span>Next deadline & reminders</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-deadlines" hidden>
+      <div class="inset">
+        <label class="field">Next due date
+          <input type="date">
+        </label>
+        <label class="field">Notify me
+          <select>
+            <option>3 days before</option>
+            <option>1 week before</option>
+            <option>2 weeks before</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button>Set reminder</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pick a plan -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-plan">
+      <span class="icon">🧭</span>
+      <span>Pick a plan (Solo 401(k), SEP IRA, Roth IRA)</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-plan" hidden>
+      <div class="inset">
+        <label class="pill"><input type="radio" name="plan" value="solo401k"> Solo 401(k)</label>
+        <label class="pill"><input type="radio" name="plan" value="sep"> SEP IRA</label>
+        <label class="pill"><input type="radio" name="plan" value="roth"> Roth IRA</label>
+      </div>
+      <div class="actions">
+        <button>Save selection</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quarterly tax estimator -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-estimator">
+      <span class="icon">💸</span>
+      <span>Quarterly tax estimator</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-estimator" hidden>
+      <div class="inset">
+        <label class="field">Quarter
+          <select>
+            <option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option>
+          </select>
+        </label>
+        <label class="field">Estimated net income
+          <input type="number" placeholder="e.g., 24000">
+        </label>
+        <label class="field">% set-aside
+          <input type="number" placeholder="e.g., 30">
+        </label>
+      </div>
+      <div class="actions">
+        <button>Estimate</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Record a set-aside -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-record">
+      <span class="icon">📝</span>
+      <span>Record a set-aside</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-record" hidden>
+      <div class="inset">
+        <label class="field">Amount
+          <input type="number" placeholder="e.g., 500">
+        </label>
+        <label class="field">Date
+          <input type="date">
+        </label>
+        <label class="field">Account
+          <select>
+            <option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button>Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contributions table -->
+  <section class="dash-item">
+    <button class="dash-card" aria-expanded="false" aria-controls="panel-contribs">
+      <span class="icon">📊</span>
+      <span>Your contributions (table: date, account, amount)</span>
+      <svg class="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
+    </button>
+    <div class="dash-panel" id="panel-contribs" hidden>
+      <div class="inset">
+        <label class="field">From
+          <input type="date">
+        </label>
+        <label class="field">To
+          <input type="date">
+        </label>
+        <label class="field">Account
+          <select>
+            <option>All</option><option>Solo 401(k)</option><option>SEP IRA</option><option>Roth IRA</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button>Filter</button>
+        <button class="secondary">Export CSV</button>
+      </div>
+    </div>
+  </section>
+</main>
+
 
   <footer>
     <hr />
