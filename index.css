@@ -65,7 +65,7 @@ nav li{
 nav li a{
   width: 124.17px;
   height: 45.59px;
-  padding: 28px 0 14px;
+  padding: 0;
   display: flex;
   border-radius: 10px;
   align-items: center;
