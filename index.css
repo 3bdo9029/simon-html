@@ -67,6 +67,7 @@ nav li a{
   height: 45.59px;
   padding: 0;
   display: inline-block;
+  border-radius: 10px;
   align-items: center;
   justify-content: center;
   text-align: center;
