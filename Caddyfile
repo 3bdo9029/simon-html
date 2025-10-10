@@ -1,4 +1,4 @@
-simon.afarghali.com {
+startup.afarghali.com {
     root * /var/www/simon
     file_server
 }
