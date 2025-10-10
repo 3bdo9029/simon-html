@@ -1,3 +1,7 @@
+/*
+   SidePot — index.css (Home)
+*/
+
 /* Reset-ish */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -10,3 +14,190 @@ body{
   -moz-osx-font-smoothing: grayscale;
 }
 img{ max-width: 100%; height: auto; display: block; }
+a{ color: #2563eb; text-decoration: none; }
+a:hover{ text-decoration: underline; }
+menu, ul, ol{ list-style: none; padding: 0; margin: 0; }
+hr{ border: 0; height: 1px; background: #e5e7eb; }
+
+/* Page layout */
+header, main, footer{
+  width: min(1100px, 92vw);
+  margin-inline: auto;
+}
+header{ padding: 28px 0 14px; }
+main{ padding: 16px 0 32px; display: grid; gap: 18px; }
+footer{ padding: 28px 0; color: #64748b; }
+
+/* Titles */
+h1{
+  margin: 0 0 12px;
+  font-size: clamp(28px, 2.6vw + 12px, 42px);
+  letter-spacing: .3px;
+}
+h1 sup{ font-size: .55em; position: relative; top: -.25em; opacity: .7; }
+
+/* Nav */
+nav{
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(2, 6, 23, .06);
+}
+nav menu{
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  flex-wrap: wrap;
+}
+nav li a{
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #0f172a;
+  transition: transform .12s ease, background-color .12s ease, color .12s ease;
+}
+nav li a:hover,
+nav li a:focus-visible{
+  background: #eef2ff;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* ✅ Highlight current page: index.html */
+nav a[href$="index.html"]{
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* Overview cards*/
+#platform-overview,
+[id="Platform Overview"]{
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.card{
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 8px 28px rgba(2, 6, 23, .06);
+  font-weight: 500;
+}
+
+/* Welcome block (second h1 inside main) */
+main > h1{
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+/* Auth form */
+form{
+  width: 100%;
+  max-width: 520px;
+  display: grid;
+  gap: 12px;
+}
+form > div{
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dbe0e6;
+  border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(2, 6, 23, .05);
+}
+form > div span{
+  width: 44px;
+  min-width: 44px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  color: #475569;
+  border-right: 1px solid #eef0f4;
+}
+form input{
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 12px 14px;
+  width: 100%;
+  font-size: 1rem;
+  color: #0f172a;
+}
+form input::placeholder{ color: #94a3b8; }
+
+/* Buttons */
+button{
+  appearance: none;
+  border: 1px solid transparent;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, .25);
+}
+button:hover{ transform: translateY(-1px); }
+button:active{ transform: translateY(0); }
+
+/* Make the second button outline style */
+button + button{
+  background: #ffffff;
+  color: #2563eb;
+  border-color: #c7d2fe;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, .05);
+}
+button + button:hover{ background: #f5f8ff; }
+
+/* Footer */
+footer img{
+  margin: 10px 0 8px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 28px rgba(2, 6, 23, .06);
+}
+.text-reset{ color: inherit; }
+footer a{ color: #2563eb; }
+
+/* Accessibility focus */
+:focus-visible{
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Small screens */
+@media (max-width: 720px){
+  #platform-overview,
+  [id="Platform Overview"]{
+    grid-template-columns: 1fr;
+  }
+  nav li a{ padding: 9px 12px; }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark){
+  body{ background: #0b1220; color: #e2e8f0; }
+  nav, .card, form > div, footer img{
+    background: #0f172a;
+    border-color: #1f2937;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+  }
+  hr{ background: #1f2937; }
+  a, footer a{ color: #60a5fa; }
+  form > div span{ border-right-color: #111827; color: #94a3b8; }
+  form input{ color: #e2e8f0; }
+  form input::placeholder{ color: #64748b; }
+  button{
+    background: #3b82f6;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, .28);
+  }
+  button + button{
+    background: #101826;
+    color: #93c5fd;
+    border-color: #1f2937;
+  }
+}
