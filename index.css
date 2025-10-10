@@ -65,7 +65,7 @@ nav li a:focus-visible{
 
 /* ✅ Highlight current page: index.html */
 nav a[href$="index.html"]{
-  background: #2563eb;
+  background: #ffffff;
   color: #ffffff;
 }
 
