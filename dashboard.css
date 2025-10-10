@@ -89,7 +89,7 @@ nav li a:focus-visible{
 }
 
 /* Highlight current page: index.html */
-nav a[href$="index.html"]{
+nav a[href$="dashboard.html"]{
   background: #2563eb;
   color: #ffffff;
 }
