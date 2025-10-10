@@ -61,7 +61,7 @@ nav menu{
 nav li a{
   width: 124.17px;
   height: 45.59px;
-  padding: 10px 14px;
+  padding: 0;
   display: inline-block;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,6 @@ nav li a{
   text-overflow: ellipsis;
   color: #000000;
   transition: transform .12s ease, background-color .12s ease, color .12s ease;
-  border-radius: 10px;
 }
 
 nav li a:hover,
