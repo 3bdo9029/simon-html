@@ -129,9 +129,21 @@ form > div{
   align-items: center;
   background: #ffffff;
   border: 1px solid #dbe0e6;
-  border-radius: 12px;
+  border-radius: 10px;
+  transition: box-shadow .15s ease;
   box-shadow: 0 6px 22px rgba(2, 6, 23, .05);
 }
+
+form > div:focus-within {
+  box-shadow: 0 0 0 2px #2563eb66;
+}
+form input::placeholder {
+  color: #64748b;
+}
+button + button {
+  margin-top: 10px;
+}
+
 form > div span{
   width: 44px;
   min-width: 44px;
@@ -140,6 +152,7 @@ form > div span{
   font-size: 1rem;
   color: #475569;
   border-right: 1px solid #eef0f4;
+
 }
 form input{
   border: none;
