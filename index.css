@@ -57,18 +57,23 @@ nav menu{
   padding: 6px;
   flex-wrap: nowrap;
 }
+
 nav li a{
   width: 124.17px;
   height: 45.59px;
-  padding: 0;
-  display: flex;
+  padding: 10px 14px;
+  display: inline-block;
   align-items: center;
   justify-content: center;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #000000;
+  transition: transform .12s ease, background-color .12s ease, color .12s ease;
+  border-radius: 10px;
 }
+
 nav li a:hover,
 nav li a:focus-visible{
   background: #eef2ff;
