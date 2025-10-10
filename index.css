@@ -65,7 +65,7 @@ nav li{
 nav li a{
   width: 124.17px;
   height: 45.59px;
-  padding: 0;
+  padding: 28px 0 14px;
   display: flex;
   border-radius: 10px;
   align-items: center;
@@ -73,6 +73,7 @@ nav li a{
   text-align: center;
   white-space: wrap;
   overflow: hidden;
+  gap: 24px;
   text-overflow: ellipsis;
   color: #000000;
   transition: transform .12s ease, background-color .12s ease, color .12s ease;
