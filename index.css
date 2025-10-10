@@ -14,7 +14,7 @@ body{
   -moz-osx-font-smoothing: grayscale;
 }
 img{ max-width: 100%; height: auto; display: block; }
-a{ color: #ffffff; text-decoration: none; }
+a{ color: #2563eb; text-decoration: none; }
 a:hover{ text-decoration: underline; }
 menu, ul, ol{ list-style: none; padding: 0; margin: 0; }
 hr{ border: 0; height: 1px; background: #e5e7eb; }
@@ -65,7 +65,7 @@ nav li a:focus-visible{
 
 /* ✅ Highlight current page: index.html */
 nav a[href$="index.html"]{
-  background: #ffffff;
+  background: #2563eb;
   color: #ffffff;
 }
 
@@ -131,14 +131,14 @@ form input::placeholder{ color: #94a3b8; }
 button{
   appearance: none;
   border: 1px solid transparent;
-  background: #ffffff;
+  background: #2563eb;
   color: #ffffff;
   padding: 10px 16px;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
-  box-shadow: 0 6px 20px rgb(255, 255, 255);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, .25);
 }
 button:hover{ transform: translateY(-1px); }
 button:active{ transform: translateY(0); }
@@ -146,7 +146,7 @@ button:active{ transform: translateY(0); }
 /* Make the second button outline style */
 button + button{
   background: #ffffff;
-  color: #ffffff;
+  color: #2563eb;
   border-color: #c7d2fe;
   box-shadow: 0 6px 18px rgba(2, 6, 23, .05);
 }
