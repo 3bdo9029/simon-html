@@ -31,7 +31,6 @@ header{
   gap: 16px;
 }
 
-/* Match dashboard main layout */
 main{
   padding: 16px 0 32px;
   display: grid;
@@ -114,7 +113,7 @@ nav a[href$="contributions.html"]{
   gap: 12px;
 }
 
-/* Match dashboard card style */
+//* Cards (non-flex boxes) */
 .card{
   background: #0f172a;
   border: 1px solid #1f2937;
@@ -126,9 +125,9 @@ nav a[href$="contributions.html"]{
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+
+  /* removed flex */
+  display: block;
 }
 .card:hover{
   transform: translateY(-2px);
@@ -136,7 +135,6 @@ nav a[href$="contributions.html"]{
   border-color: #2563eb;
 }
 
-/* Optional helper if you wrap contribution sections */
 .dash-item{ margin: 0; }
 
 /* Welcome block (second h1 inside main) */
