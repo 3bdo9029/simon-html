@@ -1,5 +1,5 @@
 /*
-   SidePot — index.css (Home)
+   SidePot — planner.css (Planner)
 */
 
 /* Reset-ish */
@@ -25,13 +25,24 @@ header, main, footer{
   margin-inline: auto;
 }
 header{ 
-    padding: 28px 0 14px; 
-    display: flex;
-    align-items: center;
-    gap: 16px;
+  padding: 28px 0 14px; 
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-main{ padding: 16px 0 32px; display: grid; gap: 18px; }
+/* Match dashboard main layout */
+main{
+  padding: 16px 0 32px;
+  display: grid;
+  gap: 16px 18px;
+  grid-template-columns: repeat(2, minmax(420px, 1fr));
+  align-items: start;
+}
+main > h2{ 
+  grid-column: 1 / -1; 
+}
+
 footer{ padding: 28px 0; color: #64748b; }
 
 /* Titles */
@@ -88,13 +99,13 @@ nav li a:focus-visible{
   outline: none;
 }
 
-/* Highlight current page: index.html */
+/* Highlight current page: planner.html */
 nav a[href$="planner.html"]{
   background: #2563eb;
   color: #ffffff;
 }
 
-/* Overview cards*/
+/* Overview cards */
 #platform-overview,
 [id="Platform Overview"]{
   margin-top: 10px;
@@ -102,14 +113,31 @@ nav a[href$="planner.html"]{
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
+
+/* Match dashboard "dashboard-card" style, but for .card used in planner */
 .card{
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: #0f172a;
+  border: 1px solid #1f2937;
   border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 8px 28px rgba(2, 6, 23, .06);
+  padding: 18px 22px;
+  font-size: 1rem;
   font-weight: 500;
+  color: #e2e8f0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.35);
+  border-color: #2563eb;
+}
+
+/* Optional helper if you wrap planner sections */
+.dash-item{ margin: 0; }
 
 /* Welcome block (second h1 inside main) */
 main > h1{
@@ -117,7 +145,7 @@ main > h1{
   margin-bottom: 8px;
 }
 
-/* Auth form */
+/* Auth / planner forms */
 form{
   width: 100%;
   max-width: 520px;
@@ -152,7 +180,6 @@ form > div span{
   font-size: 1rem;
   color: #475569;
   border-right: 1px solid #eef0f4;
-
 }
 form input{
   border: none;
@@ -214,6 +241,9 @@ footer a{ color: #2563eb; }
     grid-template-columns: 1fr;
   }
   nav li a{ padding: 9px 12px; }
+  main{
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Dark mode */
