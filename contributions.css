@@ -113,7 +113,7 @@ nav a[href$="contributions.html"]{
   gap: 12px;
 }
 
-//* Cards (non-flex boxes) */
+/* Cards (non-flex boxes) */
 .card{
   background: #0f172a;
   border: 1px solid #1f2937;
