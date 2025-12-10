@@ -1,5 +1,5 @@
 {
-  "name": "service",
+  "name": "testmongo",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,10 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "cookie-parser": "^1.4.7",
-    "express": "^5.2.1",
-    "mongodb": "^7.0.0",
-    "uuid": "^13.0.0"
+    "mongodb": "^7.0.0"
   }
 }

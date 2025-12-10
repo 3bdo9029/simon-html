@@ -8,7 +8,6 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -23,6 +22,7 @@
     "bootstrap": "^5.3.8",
     "esbuild": "^0.25.10",
     "fdir": "^6.5.0",
+    "mongodb": "^7.0.0",
     "nanoid": "^3.3.11",
     "picocolors": "^1.1.1",
     "picomatch": "^4.0.3",

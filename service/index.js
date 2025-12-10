@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
+const db = require('./database');
 
 // Use port 4000 by default, or a CLI arg if provided
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -19,16 +20,12 @@ app.use(cookieParser());
 // Serve static frontend files (for production)
 app.use(express.static('public'));
 
-// ---------- In-memory storage (for demo only) ----------
 
 // Users: username -> { passwordHash }
 const users = {};
 
 // Sessions: token -> username
 const sessions = {};
-
-// Planner data: username -> [ { id, text, created } ]
-const plannerData = {};
 
 // ---------- Auth middleware ----------
 
@@ -52,8 +49,6 @@ app.get('/api/health', (req, res) => {
 
 // ---------- Auth endpoints ----------
 
-// POST /api/auth/register
-// body: { username, password }
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body || {};
@@ -62,12 +57,15 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ msg: 'Username and password required' });
     }
 
-    if (users[username]) {
+    // Check if user already exists in Mongo
+    const existing = await db.getUser(username);
+    if (existing) {
       return res.status(409).json({ msg: 'User already exists' });
     }
 
+    // Hash and store in Mongo
     const passwordHash = await bcrypt.hash(password, 10);
-    users[username] = { passwordHash };
+    await db.addUser({ username, passwordHash });
 
     console.log(`Registered user: ${username}`);
 
@@ -77,6 +75,7 @@ app.post('/api/auth/register', async (req, res) => {
     res.status(500).json({ msg: 'Internal server error' });
   }
 });
+
 
 // POST /api/auth/login
 // body: { username, password }
