@@ -1,29 +1,57 @@
-// src/about/DogFact.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
-export function DogFact() {
-  const [fact, setFact] = useState("Loading a dog fact...");
+export default function DogFact() {
+  const [facts, setFacts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    async function fetchFact() {
-      try {
-        const response = await fetch("https://dogapi.dog/api/v2/facts");
-        const data = await response.json();
-        const text = data?.data?.[0]?.attributes?.body || "Dogs are awesome.";
-        setFact(text);
-      } catch (err) {
-        console.error(err);
-        setFact("Could not load a dog fact right now.");
+  async function fetchFacts(count = 1) {
+    try {
+      setLoading(true);
+      setError('');
+
+      const res = await fetch(
+        `https://dog-facts-api.herokuapp.com/api/v1/resources/dogs?number=${count}`
+      );
+
+      if (!res.ok) {
+        throw new Error(`Request failed with status ${res.status}`);
       }
-    }
 
-    fetchFact();
+      const data = await res.json(); // data is an array of { fact: "..." }
+      setFacts(data);
+    } catch (err) {
+      console.error(err);
+      setError('Could not load dog facts. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Load one fact when the component first renders
+  useEffect(() => {
+    fetchFacts(1);
   }, []);
 
   return (
-    <section className="dog-fact card p-3 mt-3">
-      <h2>Random Dog Fact</h2>
-      <p>{fact}</p>
-    </section>
+    <div className="dog-fact">
+      <h2>Random Dog Facts 🐶</h2>
+
+      <button onClick={() => fetchFacts(1)} disabled={loading}>
+        {loading ? 'Loading…' : 'Get another dog fact'}
+      </button>
+
+      <button onClick={() => fetchFacts(3)} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+        {loading ? 'Loading…' : 'Get 3 facts'}
+      </button>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <ul>
+        {facts.map((f, i) => (
+          <li key={i}>{f.fact}</li>
+        ))}
+      </ul>
+    </div>
   );
 }

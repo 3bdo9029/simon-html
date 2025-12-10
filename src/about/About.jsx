@@ -1,5 +1,4 @@
 import React from 'react';
-import './about.css';
 import { DogFact } from './DogFact';
 
 // Named export for the router/imports
