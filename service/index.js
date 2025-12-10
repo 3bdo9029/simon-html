@@ -1,10 +1,14 @@
+// service/index.js
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-const app = express();
+// 🔗 Our Mongo helper (you create service/database.js separately)
 const db = require('./database');
+
+const app = express();
 
 // Use port 4000 by default, or a CLI arg if provided
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -20,9 +24,7 @@ app.use(cookieParser());
 // Serve static frontend files (for production)
 app.use(express.static('public'));
 
-
-// Users: username -> { passwordHash }
-const users = {};
+// ---------- In-memory sessions (OK for this class) ----------
 
 // Sessions: token -> username
 const sessions = {};
@@ -41,20 +43,37 @@ function authMiddleware(req, res, next) {
   next();
 }
 
-// ---------- Health check (optional but useful) ----------
+// ---------- Health check ----------
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// ---------- Auth endpoints ----------
+// ---------- Auth: who am I? ----------
+// Called by /api/auth/me from the React App on load
+
+app.get('/api/auth/me', (req, res) => {
+  const token = req.cookies?.token;
+  const username = token && sessions[token];
+
+  if (!username) {
+    return res.json({ authenticated: false });
+  }
+
+  res.json({ authenticated: true, username });
+});
+
+// ---------- Auth: register ----------
+// Body: { username, password }
 
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body || {};
 
     if (!username || !password) {
-      return res.status(400).json({ msg: 'Username and password required' });
+      return res
+        .status(400)
+        .json({ msg: 'Username and password required' });
     }
 
     // Check if user already exists in Mongo
@@ -76,32 +95,42 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// ---------- Auth: login ----------
+// Body: { username, password }
 
-// POST /api/auth/login
-// body: { username, password }
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
 
     if (!username || !password) {
-      return res.status(400).json({ msg: 'Username and password required' });
+      return res
+        .status(400)
+        .json({ msg: 'Username and password required' });
     }
 
-    const user = users[username];
+    // Look up user from Mongo
+    const user = await db.getUser(username);
     if (!user) {
-      return res.status(401).json({ msg: 'Invalid username or password' });
+      return res
+        .status(401)
+        .json({ msg: 'Invalid username or password' });
     }
 
-    const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+    const passwordMatches = await bcrypt.compare(
+      password,
+      user.passwordHash
+    );
+
     if (!passwordMatches) {
-      return res.status(401).json({ msg: 'Invalid username or password' });
+      return res
+        .status(401)
+        .json({ msg: 'Invalid username or password' });
     }
 
-    // Create a session token and store it
+    // Create session token and set cookie
     const token = uuidv4();
     sessions[token] = username;
 
-    // Set the session token as an HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
       sameSite: 'lax',
@@ -117,51 +146,38 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// POST /api/auth/logout
+// ---------- Auth: logout ----------
+
 app.post('/api/auth/logout', (req, res) => {
   try {
     const token = req.cookies?.token;
-
-    if (token && sessions[token]) {
-      const username = sessions[token];
+    if (token) {
       delete sessions[token];
-      console.log(`User logged out: ${username}`);
     }
 
-    // Clear the cookie on the client
     res.clearCookie('token', {
       httpOnly: true,
       sameSite: 'lax',
-      // secure: true, // match the login cookie options if using secure
+      // secure: true, // match what you use in login
     });
 
-    res.json({ msg: 'Logged out successfully' });
+    res.json({ msg: 'Logged out' });
   } catch (err) {
     console.error('Error in /api/auth/logout', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
 });
 
-// Optional helper: current user
-app.get('/api/auth/me', (req, res) => {
-  const token = req.cookies?.token;
-  const username = token && sessions[token];
+// ---------- Planner: get items ----------
+// GET /api/planner (requires auth)
 
-  if (!username) {
-    return res.status(200).json({ authenticated: false });
-  }
-
-  res.json({ authenticated: true, username });
-});
-
-// ---------- Restricted application endpoints ----------
-
-// GET /api/planner  (restricted)
-// Returns the current user's planner items
-app.get('/api/planner', authMiddleware, (req, res) => {
+app.get('/api/planner', authMiddleware, async (req, res) => {
   try {
     const username = req.username;
-    const items = plannerData[username] || [];
+
+    const items = await db.getPlannerItems(username);
+
+    // items are already { id, username, text, created, _id, ... }
     res.json(items);
   } catch (err) {
     console.error('Error in GET /api/planner', err);
@@ -169,9 +185,10 @@ app.get('/api/planner', authMiddleware, (req, res) => {
   }
 });
 
-// POST /api/planner  (restricted)
-// body: { text }
-app.post('/api/planner', authMiddleware, (req, res) => {
+// ---------- Planner: add item ----------
+// POST /api/planner { text } (requires auth)
+
+app.post('/api/planner', authMiddleware, async (req, res) => {
   try {
     const username = req.username;
     const { text } = req.body || {};
@@ -180,17 +197,14 @@ app.post('/api/planner', authMiddleware, (req, res) => {
       return res.status(400).json({ msg: 'Text is required' });
     }
 
-    if (!plannerData[username]) {
-      plannerData[username] = [];
-    }
-
     const item = {
       id: uuidv4(),
+      username,
       text,
       created: new Date().toISOString(),
     };
 
-    plannerData[username].push(item);
+    await db.addPlannerItem(item);
 
     res.status(201).json(item);
   } catch (err) {
