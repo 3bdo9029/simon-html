@@ -1,19 +1,19 @@
-// service/database.js
+// database.js
 const { MongoClient } = require('mongodb');
 const config = require('./dbConfig.json');
 
-// Build the Atlas connection URL just like in the Simon DB example
+// Build Atlas connection URL
 const url = `mongodb+srv://${config.userName}:${config.password}@${config.hostname}`;
 
-// Create the client and choose a database name for your startup
+// Create client and DB
 const client = new MongoClient(url);
-const db = client.db('startup'); // you can change 'startup' to 'sidepot' if you want
+const db = client.db('startup'); // you can rename to 'sidepot' if you want
 
 // Collections
 const userCollection = db.collection('users');
 const plannerCollection = db.collection('planner');
 
-// Test the connection on startup
+// Test connection on startup
 (async function testConnection() {
   try {
     await db.command({ ping: 1 });
@@ -24,26 +24,25 @@ const plannerCollection = db.collection('planner');
   }
 })();
 
-// ----- User functions (auth data in Mongo) -----
+// ----- User functions -----
 
 function getUser(username) {
-  // Returns a single user document or null
   return userCollection.findOne({ username });
 }
 
 async function addUser(user) {
-  // user = { username, passwordHash }
+  // user: { username, passwordHash }
   await userCollection.insertOne(user);
 }
 
-// ----- Planner functions (app data in Mongo) -----
+// ----- Planner functions -----
 
 function getPlannerItems(username) {
   return plannerCollection.find({ username }).toArray();
 }
 
 async function addPlannerItem(item) {
-  // item = { id, username, text, created }
+  // item: { id, username, text, created }
   await plannerCollection.insertOne(item);
 }
 
