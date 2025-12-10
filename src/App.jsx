@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
 
-import { About } from './about/About.jsx';
+import { About } from './about/about.jsx';
 import { Contributions } from './contributions/Contributions.jsx';
 import { Dashboard } from './dashboard/Dashboard.jsx';
 import { Index } from './index/Index.jsx';
