@@ -8,10 +8,7 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/webprogramming260/simon-css.git"
-  },
+  
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -20,7 +17,7 @@
   },
   "homepage": "https://github.com/webprogramming260/simon-css#readme",
   "devDependencies": {
-    "vite": "^7.1.9"
+    "vite": "^7.2.2"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
