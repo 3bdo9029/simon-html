@@ -365,6 +365,7 @@ To match the Simon pattern and the deployment script expectations, the project i
     ├── index.js
     └── package.json // Backend NPM configuration
 
+```text
 ---
 
 ## Startup DB
