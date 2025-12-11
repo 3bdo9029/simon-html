@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/webprogramming260/simon-css#readme",
   "devDependencies": {
+    "@vitejs/plugin-react-swc": "^4.2.2",
     "vite": "^7.2.2"
   },
   "dependencies": {

@@ -1,292 +1,153 @@
-// service/index.js
-
-const express = require('express');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
-
-// 🔌 HTTP + WebSocket
-const http = require('http');
-const WebSocket = require('ws');
-const path = require('path');
-
-// 🔗 Our Mongo helper
-const db = require('./database');
-
+const express = require('express');
+const uuid = require('uuid');
 const app = express();
+const DB = require('./database.js');
+const WebSocket = require('ws');
 
-// Use port 4000 by default, or a CLI arg if provided
-const port = process.argv.length > 2 ? process.argv[2] : 4000;
+const authCookieName = 'token';
 
-// ---------- Middleware ----------
+// The service port may be set on the command line
+const port = process.argv.length > 2 ? process.argv[2] : 3000;
 
-// Parse JSON request bodies
+// JSON body parsing using built-in middleware
 app.use(express.json());
 
-// Parse cookies
+// Use the cookie parser middleware for tracking authentication tokens
 app.use(cookieParser());
 
-// Serve static frontend files (for production) from ./public
-// This matches what deployService.sh creates on the server
-const publicPath = path.join(__dirname, 'public');
-app.use(express.static(publicPath));
+// Serve up the applications static content
+app.use(express.static('public'));
 
+// Router for service endpoints
+const apiRouter = express.Router();
+app.use(`/api`, apiRouter);
 
-// ---------- (keep all your /api/... routes here) ----------
+// CreateAuth token for a new user
+apiRouter.post('/auth/create', async (req, res) => {
+  if (await findUser('email', req.body.email)) {
+    res.status(409).send({ msg: 'Existing user' });
+  } else {
+    const user = await createUser(req.body.email, req.body.password);
 
-// Fallback to frontend for non-API routes
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api') || req.path === '/ws') {
-    return res.status(404).json({ msg: 'Not found' });
+    setAuthCookie(res, user.token);
+    res.send({ email: user.email });
   }
-
-  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// ---------- In-memory sessions (OK for this class) ----------
-
-// Sessions: token -> username
-const sessions = {};
-
-// ---------- Auth middleware ----------
-
-function authMiddleware(req, res, next) {
-  const token = req.cookies?.token;
-  const username = token && sessions[token];
-
-  if (!username) {
-    return res.status(401).json({ msg: 'Unauthorized' });
-  }
-
-  req.username = username;
-  next();
-}
-
-// ---------- Health check ----------
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-// ---------- Auth: who am I? ----------
-
-app.get('/api/auth/me', (req, res) => {
-  const token = req.cookies?.token;
-  const username = token && sessions[token];
-
-  if (!username) {
-    return res.json({ authenticated: false });
-  }
-
-  res.json({ authenticated: true, username });
-});
-
-// ---------- Auth: register ----------
-
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { username, password } = req.body || {};
-
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ msg: 'Username and password required' });
+// GetAuth token for the provided credentials
+apiRouter.post('/auth/login', async (req, res) => {
+  const user = await findUser('email', req.body.email);
+  if (user) {
+    if (await bcrypt.compare(req.body.password, user.password)) {
+      user.token = uuid.v4();
+      await DB.updateUser(user);
+      setAuthCookie(res, user.token);
+      res.send({ email: user.email });
+      return;
     }
-
-    // Check if user already exists in Mongo
-    const existing = await db.getUser(username);
-    if (existing) {
-      return res.status(409).json({ msg: 'User already exists' });
-    }
-
-    // Hash and store in Mongo
-    const passwordHash = await bcrypt.hash(password, 10);
-    await db.addUser({ username, passwordHash });
-
-    console.log(`Registered user: ${username}`);
-
-    res.status(201).json({ msg: 'Registered successfully' });
-  } catch (err) {
-    console.error('Error in /api/auth/register', err);
-    res.status(500).json({ msg: 'Internal server error' });
   }
+  res.status(401).send({ msg: 'Unauthorized' });
 });
 
-// ---------- Auth: login ----------
-
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { username, password } = req.body || {};
-
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ msg: 'Username and password required' });
-    }
-
-    // Look up user from Mongo
-    const user = await db.getUser(username);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ msg: 'Invalid username or password' });
-    }
-
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
-    if (!passwordMatches) {
-      return res
-        .status(401)
-        .json({ msg: 'Invalid username or password' });
-    }
-
-    // Create session token and set cookie
-    const token = uuidv4();
-    sessions[token] = username;
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax',
-      // secure: true, // enable in real HTTPS production
-    });
-
-    console.log(`User logged in: ${username}`);
-
-    res.json({ msg: 'Logged in successfully' });
-  } catch (err) {
-    console.error('Error in /api/auth/login', err);
-    res.status(500).json({ msg: 'Internal server error' });
+// DeleteAuth token if stored in cookie
+apiRouter.delete('/auth/logout', async (req, res) => {
+  const user = await findUser('token', req.cookies[authCookieName]);
+  if (user) {
+    delete user.token;
+    DB.updateUser(user);
   }
+  res.clearCookie(authCookieName);
+  res.status(204).end();
 });
 
-// ---------- Auth: logout ----------
-
-app.post('/api/auth/logout', (req, res) => {
-  try {
-    const token = req.cookies?.token;
-    if (token) {
-      delete sessions[token];
-    }
-
-    res.clearCookie('token', {
-      httpOnly: true,
-      sameSite: 'lax',
-      // secure: true, // match what you use in login
-    });
-
-    res.json({ msg: 'Logged out' });
-  } catch (err) {
-    console.error('Error in /api/auth/logout', err);
-    res.status(500).json({ msg: 'Internal server error' });
-  }
-});
-
-// ---------- Planner: get items ----------
-
-app.get('/api/planner', authMiddleware, async (req, res) => {
-  try {
-    const username = req.username;
-
-    const items = await db.getPlannerItems(username);
-
-    res.json(items);
-  } catch (err) {
-    console.error('Error in GET /api/planner', err);
-    res.status(500).json({ msg: 'Internal server error' });
-  }
-});
-
-// ---------- Planner: add item ----------
-
-// we'll broadcast over WS when a new item is added
-let broadcastPlannerItem = () => {}; // placeholder, real fn defined after wss setup
-
-app.post('/api/planner', authMiddleware, async (req, res) => {
-  try {
-    const username = req.username;
-    const { text } = req.body || {};
-
-    if (!text) {
-      return res.status(400).json({ msg: 'Text is required' });
-    }
-
-    const item = {
-      id: uuidv4(),
-      username,
-      text,
-      created: new Date().toISOString(),
-    };
-
-    await db.addPlannerItem(item);
-
-    // 🔊 push anonymized info over WebSocket
-    broadcastPlannerItem(item);
-
-    res.status(201).json(item);
-  } catch (err) {
-    console.error('Error in POST /api/planner', err);
-    res.status(500).json({ msg: 'Internal server error' });
-  }
-});
-
-// ---------- Fallback to frontend for non-API routes ----------
-
-app.get('*', (req, res) => {
-  // let API and WS paths fall through to 404 / upgrade handling
-  if (req.path.startsWith('/api') || req.path === '/ws') {
-    return res.status(404).json({ msg: 'Not found' });
-  }
-
-  res.sendFile(path.join(publicPath, 'index.html'));
-});
-
-// ---------- WebSocket setup ----------
-
-// Create HTTP server from Express app
-const server = http.createServer(app);
-
-// Create WebSocket server on same port, under /ws
-const wss = new WebSocket.Server({ server, path: '/ws' });
-
-const clients = new Set();
-
-wss.on('connection', (ws) => {
-  console.log('WebSocket client connected');
-  clients.add(ws);
-
-  ws.send(
-    JSON.stringify({
-      type: 'welcome',
-      message: 'Welcome to the Side Pot live feed!',
-    })
-  );
-
-  ws.on('close', () => {
-    clients.delete(ws);
-    console.log('WebSocket client disconnected');
-  });
-});
-
-// Real broadcast helper now that wss exists
-broadcastPlannerItem = (item) => {
-  const payload = JSON.stringify({
-    type: 'savings_event',
-    amount: item.text, // or parse number from text if you have structure
-    created: item.created,
-  });
-
-  for (const client of clients) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
+// Middleware to verify that the user is authorized to call an endpoint
+const verifyAuth = async (req, res, next) => {
+  const user = await findUser('token', req.cookies[authCookieName]);
+  if (user) {
+    next();
+  } else {
+    res.status(401).send({ msg: 'Unauthorized' });
   }
 };
 
-// ---------- Start server ----------
+// GetScores
+apiRouter.get('/scores', verifyAuth, async (req, res) => {
+  const scores = await DB.getHighScores();
+  res.send(scores);
+});
 
-server.listen(port, () => {
-  console.log(`Service + WebSocket listening on port ${port}`);
+// SubmitScore
+apiRouter.post('/score', verifyAuth, async (req, res) => {
+  const scores = updateScores(req.body);
+  res.send(scores);
+});
+
+// Default error handler
+app.use(function (err, req, res, next) {
+  res.status(500).send({ type: err.name, message: err.message });
+});
+
+// Return the application's default page if the path is unknown
+app.use((_req, res) => {
+  res.sendFile('index.html', { root: 'public' });
+});
+
+// updateScores considers a new score for inclusion in the high scores.
+async function updateScores(newScore) {
+  await DB.addScore(newScore);
+  return DB.getHighScores();
+}
+
+async function createUser(email, password) {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = {
+    email: email,
+    password: passwordHash,
+    token: uuid.v4(),
+  };
+  await DB.addUser(user);
+
+  return user;
+}
+
+async function findUser(field, value) {
+  if (!value) return null;
+
+  if (field === 'token') {
+    return DB.getUserByToken(value);
+  }
+  return DB.getUser(value);
+}
+
+// setAuthCookie in the HTTP response
+function setAuthCookie(res, authToken) {
+  res.cookie(authCookieName, authToken, {
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+    secure: true,
+    httpOnly: true,
+    sameSite: 'strict',
+  });
+}
+
+const server = app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});
+
+// Create WebSocket server
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', (ws) => {
+  console.log("WebSocket client connected");
+
+  ws.on('message', (msg) => {
+    console.log("Received:", msg.toString());
+
+    // Echo back, or broadcast if needed
+    ws.send(JSON.stringify({ message: "Server received: " + msg }));
+  });
+
+  ws.send(JSON.stringify({ message: "Welcome to the Startup WebSocket!" }));
 });
