@@ -1,7 +1,41 @@
-import React from 'react';
+/* global WebSocket */
+import React, { useEffect, useState } from 'react';
 import './dashboard.css';
 
 export function Dashboard() {
+  const [status, setStatus] = useState('Connecting…');
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+    ws.onopen = () => setStatus('Connected to live feed');
+    ws.onclose = () => setStatus('Disconnected');
+    ws.onerror = () => setStatus('Error connecting');
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'savings_event') {
+          setEvents((prev) => [
+            {
+              id: Date.now() + Math.random(),
+              message: `Someone just set aside $${data.amount ?? '—'}`,
+              created: data.created || new Date().toISOString(),
+            },
+            ...prev,
+          ]);
+        }
+      } catch (err) {
+        console.error('Invalid WebSocket message', err);
+      }
+    };
+
+    return () => ws.close();
+  }, []);
+
   return (
     <main>
       {/* Live feed */}
@@ -55,6 +89,17 @@ export function Dashboard() {
               <input type="checkbox" /> Show 30-day avg
             </label>
           </div>
+
+          {/* WebSocket status + feed */}
+          <div className="inset">
+            <p className="live-status">Status: {status}</p>
+            <ul className="live-list">
+              {events.map((e) => (
+                <li key={e.id}>{e.message}</li>
+              ))}
+            </ul>
+          </div>
+
           <div className="actions">
             <button>Apply</button>
           </div>
@@ -240,7 +285,8 @@ export function Dashboard() {
               </select>
             </label>
             <label className="field">
-              Estimated net income <input type="number" placeholder="e.g., 24000" />
+              Estimated net income{' '}
+              <input type="number" placeholder="e.g., 24000" />
             </label>
             <label className="field">
               % set-aside <input type="number" placeholder="e.g., 30" />

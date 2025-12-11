@@ -5,9 +5,10 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-// 🔌 NEW: HTTP + WebSocket
+// 🔌 HTTP + WebSocket
 const http = require('http');
 const WebSocket = require('ws');
+const path = require('path');
 
 // 🔗 Our Mongo helper
 const db = require('./database');
@@ -25,8 +26,9 @@ app.use(express.json());
 // Parse cookies
 app.use(cookieParser());
 
-// Serve static frontend files (for production)
-app.use(express.static('public'));
+// Serve static frontend files (for production) from ../dist
+const publicPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(publicPath));
 
 // ---------- In-memory sessions (OK for this class) ----------
 
@@ -207,7 +209,7 @@ app.post('/api/planner', authMiddleware, async (req, res) => {
 
     await db.addPlannerItem(item);
 
-    // 🔊 NEW: push anonymized info over WebSocket
+    // 🔊 push anonymized info over WebSocket
     broadcastPlannerItem(item);
 
     res.status(201).json(item);
@@ -215,6 +217,17 @@ app.post('/api/planner', authMiddleware, async (req, res) => {
     console.error('Error in POST /api/planner', err);
     res.status(500).json({ msg: 'Internal server error' });
   }
+});
+
+// ---------- Fallback to frontend for non-API routes ----------
+
+app.get('*', (req, res) => {
+  // let API and WS paths fall through to 404 / upgrade handling
+  if (req.path.startsWith('/api') || req.path === '/ws') {
+    return res.status(404).json({ msg: 'Not found' });
+  }
+
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // ---------- WebSocket setup ----------
