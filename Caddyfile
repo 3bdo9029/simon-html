@@ -1,4 +1,4 @@
 startup.afarghali.com {
-    root * /var/www/simon
+    reverse_proxy localhost:4000
     file_server
 }
