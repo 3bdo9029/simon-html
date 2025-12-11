@@ -365,9 +365,7 @@ To match the Simon pattern and the deployment script expectations, the project i
     ├── index.js
     └── package.json // Backend NPM configuration
 
-```text
----
-
+```
 ## Startup DB
 
 **Goal:** Persist user accounts and contribution data in MongoDB (instead of in-memory storage) and support secure login for the Side Pot app.
