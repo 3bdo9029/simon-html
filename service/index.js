@@ -2,9 +2,10 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
 const uuid = require('uuid');
-const app = express();
-const DB = require('./database.js');
 const WebSocket = require('ws');
+const DB = require('./database.js');
+
+const app = express();
 
 const authCookieName = 'token';
 
@@ -17,12 +18,12 @@ app.use(express.json());
 // Use the cookie parser middleware for tracking authentication tokens
 app.use(cookieParser());
 
-// Serve up the applications static content
+// Serve up the application's static content
 app.use(express.static('public'));
 
 // Router for service endpoints
 const apiRouter = express.Router();
-app.use(`/api`, apiRouter);
+app.use('/api', apiRouter);
 
 // CreateAuth token for a new user
 apiRouter.post('/auth/create', async (req, res) => {
@@ -56,7 +57,7 @@ apiRouter.delete('/auth/logout', async (req, res) => {
   const user = await findUser('token', req.cookies[authCookieName]);
   if (user) {
     delete user.token;
-    DB.updateUser(user);
+    await DB.updateUser(user);
   }
   res.clearCookie(authCookieName);
   res.status(204).end();
@@ -73,19 +74,24 @@ const verifyAuth = async (req, res, next) => {
 };
 
 // GetScores
-apiRouter.get('/scores', verifyAuth, async (req, res) => {
+apiRouter.get('/scores', verifyAuth, async (_req, res) => {
   const scores = await DB.getHighScores();
   res.send(scores);
 });
 
 // SubmitScore
 apiRouter.post('/score', verifyAuth, async (req, res) => {
-  const scores = updateScores(req.body);
+  const scores = await updateScores(req.body);
+
+  // 🔥 Broadcast updated scores to all WebSocket clients
+  broadcastScores(scores);
+
   res.send(scores);
 });
 
 // Default error handler
-app.use(function (err, req, res, next) {
+app.use(function (err, _req, res, _next) {
+  console.error(err);
   res.status(500).send({ type: err.name, message: err.message });
 });
 
@@ -132,22 +138,66 @@ function setAuthCookie(res, authToken) {
   });
 }
 
+// ---------- HTTP + WebSocket server ----------
+
 const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
 
-// Create WebSocket server
+// Create WebSocket server (accepts connections on any path for this host)
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-  console.log("WebSocket client connected");
-
-  ws.on('message', (msg) => {
-    console.log("Received:", msg.toString());
-
-    // Echo back, or broadcast if needed
-    ws.send(JSON.stringify({ message: "Server received: " + msg }));
+// Helper to broadcast the current scores to all connected clients
+function broadcastScores(scores) {
+  const payload = JSON.stringify({
+    type: 'scores_update',
+    scores,
   });
 
-  ws.send(JSON.stringify({ message: "Welcome to the Startup WebSocket!" }));
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+}
+
+wss.on('connection', async (ws) => {
+  console.log('WebSocket client connected');
+
+  // Send current high scores to this client on connect
+  try {
+    const scores = await DB.getHighScores();
+    ws.send(
+      JSON.stringify({
+        type: 'scores_update',
+        scores,
+      })
+    );
+  } catch (err) {
+    console.error('Failed to send initial scores over WebSocket', err);
+  }
+
+  ws.on('message', (msg) => {
+    console.log('Received via WebSocket:', msg.toString());
+
+    // Optional echo back for debugging
+    ws.send(
+      JSON.stringify({
+        type: 'echo',
+        message: 'Server received: ' + msg,
+      })
+    );
+  });
+
+  ws.on('close', () => {
+    console.log('WebSocket client disconnected');
+  });
+
+  // Optional welcome message
+  ws.send(
+    JSON.stringify({
+      type: 'welcome',
+      message: 'Welcome to the Startup WebSocket!',
+    })
+  );
 });
