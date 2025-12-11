@@ -26,9 +26,22 @@ app.use(express.json());
 // Parse cookies
 app.use(cookieParser());
 
-// Serve static frontend files (for production) from ../dist
-const publicPath = path.join(__dirname, '..', 'dist');
+// Serve static frontend files (for production) from ./public
+// This matches what deployService.sh creates on the server
+const publicPath = path.join(__dirname, 'public');
 app.use(express.static(publicPath));
+
+
+// ---------- (keep all your /api/... routes here) ----------
+
+// Fallback to frontend for non-API routes
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api') || req.path === '/ws') {
+    return res.status(404).json({ msg: 'Not found' });
+  }
+
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 // ---------- In-memory sessions (OK for this class) ----------
 
