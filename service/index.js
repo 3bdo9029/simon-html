@@ -5,7 +5,11 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
-// 🔗 Our Mongo helper (you create service/database.js separately)
+// 🔌 NEW: HTTP + WebSocket
+const http = require('http');
+const WebSocket = require('ws');
+
+// 🔗 Our Mongo helper
 const db = require('./database');
 
 const app = express();
@@ -50,7 +54,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // ---------- Auth: who am I? ----------
-// Called by /api/auth/me from the React App on load
 
 app.get('/api/auth/me', (req, res) => {
   const token = req.cookies?.token;
@@ -64,7 +67,6 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // ---------- Auth: register ----------
-// Body: { username, password }
 
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -96,7 +98,6 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ---------- Auth: login ----------
-// Body: { username, password }
 
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -169,7 +170,6 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // ---------- Planner: get items ----------
-// GET /api/planner (requires auth)
 
 app.get('/api/planner', authMiddleware, async (req, res) => {
   try {
@@ -177,7 +177,6 @@ app.get('/api/planner', authMiddleware, async (req, res) => {
 
     const items = await db.getPlannerItems(username);
 
-    // items are already { id, username, text, created, _id, ... }
     res.json(items);
   } catch (err) {
     console.error('Error in GET /api/planner', err);
@@ -186,7 +185,9 @@ app.get('/api/planner', authMiddleware, async (req, res) => {
 });
 
 // ---------- Planner: add item ----------
-// POST /api/planner { text } (requires auth)
+
+// we'll broadcast over WS when a new item is added
+let broadcastPlannerItem = () => {}; // placeholder, real fn defined after wss setup
 
 app.post('/api/planner', authMiddleware, async (req, res) => {
   try {
@@ -206,6 +207,9 @@ app.post('/api/planner', authMiddleware, async (req, res) => {
 
     await db.addPlannerItem(item);
 
+    // 🔊 NEW: push anonymized info over WebSocket
+    broadcastPlannerItem(item);
+
     res.status(201).json(item);
   } catch (err) {
     console.error('Error in POST /api/planner', err);
@@ -213,8 +217,50 @@ app.post('/api/planner', authMiddleware, async (req, res) => {
   }
 });
 
+// ---------- WebSocket setup ----------
+
+// Create HTTP server from Express app
+const server = http.createServer(app);
+
+// Create WebSocket server on same port, under /ws
+const wss = new WebSocket.Server({ server, path: '/ws' });
+
+const clients = new Set();
+
+wss.on('connection', (ws) => {
+  console.log('WebSocket client connected');
+  clients.add(ws);
+
+  ws.send(
+    JSON.stringify({
+      type: 'welcome',
+      message: 'Welcome to the Side Pot live feed!',
+    })
+  );
+
+  ws.on('close', () => {
+    clients.delete(ws);
+    console.log('WebSocket client disconnected');
+  });
+});
+
+// Real broadcast helper now that wss exists
+broadcastPlannerItem = (item) => {
+  const payload = JSON.stringify({
+    type: 'savings_event',
+    amount: item.text, // or parse number from text if you have structure
+    created: item.created,
+  });
+
+  for (const client of clients) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  }
+};
+
 // ---------- Start server ----------
 
-app.listen(port, () => {
-  console.log(`Service listening on port ${port}`);
+server.listen(port, () => {
+  console.log(`Service + WebSocket listening on port ${port}`);
 });
