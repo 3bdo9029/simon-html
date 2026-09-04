@@ -1,11 +1,12 @@
+// index.js (full file)
+
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
 const uuid = require('uuid');
-const WebSocket = require('ws');
-const DB = require('./database.js');
-
 const app = express();
+const DB = require('./database.js');
+const WebSocket = require('ws');
 
 const authCookieName = 'token';
 
@@ -25,34 +26,164 @@ app.use(express.static('public'));
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
 
-// CreateAuth token for a new user
-apiRouter.post('/auth/create', async (req, res) => {
-  if (await findUser('email', req.body.email)) {
-    res.status(409).send({ msg: 'Existing user' });
-  } else {
-    const user = await createUser(req.body.email, req.body.password);
+/**
+ * Helpers
+ */
+async function findUser(field, value) {
+  if (!value) return null;
 
+  if (field === 'token') {
+    return DB.getUserByToken(value);
+  }
+  // DB.getUser expects email (per Simon pattern)
+  return DB.getUser(value);
+}
+
+async function createUser(email, password) {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = {
+    email: email,
+    username: email,      // ✅ important
+    password: passwordHash,
+    token: uuid.v4(),
+  };
+
+  await DB.addUser(user);
+  return user;
+}
+
+
+// setAuthCookie in the HTTP response
+function setAuthCookie(res, authToken) {
+  res.cookie(authCookieName, authToken, {
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+    secure: true, // requires https in production
+    httpOnly: true,
+    sameSite: 'strict',
+  });
+}
+
+// Middleware to verify that the user is authorized to call an endpoint
+const verifyAuth = async (req, res, next) => {
+  try {
+    const token = req.cookies[authCookieName];
+    const user = await findUser('token', token);
+    if (user) return next();
+    return res.status(401).send({ msg: 'Unauthorized' });
+  } catch (e) {
+    console.error('verifyAuth failed:', e);
+    return res.status(503).send({ msg: 'Database unavailable' });
+  }
+};
+
+function getEmailFromBody(req) {
+  return (req.body.email ?? req.body.username ?? '').trim();
+}
+
+/**
+ * AUTH ROUTES
+ * Supports BOTH {email, password} and {username, password}
+ * Adds aliases: /auth/register and POST /auth/logout
+ */
+
+// Create account
+apiRouter.post('/auth/create', async (req, res) => {
+  try {
+    const email = getEmailFromBody(req);
+
+    if (await findUser('email', email)) {
+      return res.status(409).send({ msg: 'Existing user' });
+    }
+
+    const user = await createUser(email, req.body.password);
     setAuthCookie(res, user.token);
     res.send({ email: user.email });
+  } catch (e) {
+    console.error(e);
+    res.status(503).send({ msg: 'Database unavailable' });
   }
 });
 
-// GetAuth token for the provided credentials
-apiRouter.post('/auth/login', async (req, res) => {
-  const user = await findUser('email', req.body.email);
-  if (user) {
-    if (await bcrypt.compare(req.body.password, user.password)) {
-      user.token = uuid.v4();
-      await DB.updateUser(user);
-      setAuthCookie(res, user.token);
-      res.send({ email: user.email });
-      return;
+
+// Alias for frontends calling /auth/register
+apiRouter.post('/auth/register', async (req, res) => {
+  // just reuse the same logic as /auth/create
+  try {
+    const email = getEmailFromBody(req);
+
+    if (await findUser('email', email)) {
+      return res.status(409).send({ msg: 'Existing user' });
     }
+
+    const user = await createUser(email, req.body.password);
+    setAuthCookie(res, user.token);
+    res.send({ email: user.email });
+  } catch (e) {
+    console.error(e);
+    res.status(503).send({ msg: 'Database unavailable' });
   }
-  res.status(401).send({ msg: 'Unauthorized' });
 });
 
-// DeleteAuth token if stored in cookie
+
+// Login
+apiRouter.post('/auth/login', async (req, res) => {
+  try {
+    const email = getEmailFromBody(req);
+    const password = req.body.password ?? '';
+
+    console.log('LOGIN attempt:', { email, hasPassword: !!password });
+
+    if (!email || !password) {
+      return res.status(400).send({ msg: 'Missing email/username or password' });
+    }
+
+    const user = await findUser('email', email);
+
+    if (!user) {
+      console.log('LOGIN fail: user not found for', email);
+      return res.status(401).send({ msg: 'Unauthorized' });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+
+    if (!ok) {
+      console.log('LOGIN fail: password mismatch for', email);
+      return res.status(401).send({ msg: 'Unauthorized' });
+    }
+
+    user.token = uuid.v4();
+    await DB.updateUser(user);
+    setAuthCookie(res, user.token);
+    return res.send({ email: user.email, username: user.email });
+  } catch (e) {
+    console.error('LOGIN error:', e);
+    return res.status(503).send({ msg: 'Database unavailable' });
+  }
+});
+
+
+
+// "Who am I" (prevents the "<!DOCTYPE" JSON parse error)
+apiRouter.get('/auth/me', async (req, res) => {
+  try {
+    const token = req.cookies[authCookieName];
+    const user = await findUser('token', token);
+
+    if (user) {
+      return res.send({ authenticated: true, email: user.email, username: user.email });
+    }
+    return res.send({ authenticated: false });
+  } catch (e) {
+    console.error('GET /api/auth/me failed:', e);
+    // IMPORTANT: still return JSON so frontend doesn't die
+    return res.status(200).send({ authenticated: false });
+  }
+});
+
+
+
+// Logout (DELETE version)
 apiRouter.delete('/auth/logout', async (req, res) => {
   const user = await findUser('token', req.cookies[authCookieName]);
   if (user) {
@@ -63,15 +194,20 @@ apiRouter.delete('/auth/logout', async (req, res) => {
   res.status(204).end();
 });
 
-// Middleware to verify that the user is authorized to call an endpoint
-const verifyAuth = async (req, res, next) => {
+// Logout (POST alias, in case frontend uses POST)
+apiRouter.post('/auth/logout', async (req, res) => {
   const user = await findUser('token', req.cookies[authCookieName]);
   if (user) {
-    next();
-  } else {
-    res.status(401).send({ msg: 'Unauthorized' });
+    delete user.token;
+    await DB.updateUser(user);
   }
-};
+  res.clearCookie(authCookieName);
+  res.status(204).end();
+});
+
+/**
+ * APP ROUTES
+ */
 
 // GetScores
 apiRouter.get('/scores', verifyAuth, async (_req, res) => {
@@ -82,22 +218,7 @@ apiRouter.get('/scores', verifyAuth, async (_req, res) => {
 // SubmitScore
 apiRouter.post('/score', verifyAuth, async (req, res) => {
   const scores = await updateScores(req.body);
-
-  // 🔥 Broadcast updated scores to all WebSocket clients
-  broadcastScores(scores);
-
   res.send(scores);
-});
-
-// Default error handler
-app.use(function (err, _req, res, _next) {
-  console.error(err);
-  res.status(500).send({ type: err.name, message: err.message });
-});
-
-// Return the application's default page if the path is unknown
-app.use((_req, res) => {
-  res.sendFile('index.html', { root: 'public' });
 });
 
 // updateScores considers a new score for inclusion in the high scores.
@@ -106,98 +227,45 @@ async function updateScores(newScore) {
   return DB.getHighScores();
 }
 
-async function createUser(email, password) {
-  const passwordHash = await bcrypt.hash(password, 10);
+/**
+ * Default error handler (always JSON)
+ */
+app.use(function (err, _req, res, _next) {
+  res.status(500).send({ type: err.name, message: err.message });
+});
 
-  const user = {
-    email: email,
-    password: passwordHash,
-    token: uuid.v4(),
-  };
-  await DB.addUser(user);
+/**
+ * SPA fallback (must be AFTER /api routes)
+ */
+app.use((_req, res) => {
+  res.sendFile('index.html', { root: 'public' });
+});
 
-  return user;
-}
-
-async function findUser(field, value) {
-  if (!value) return null;
-
-  if (field === 'token') {
-    return DB.getUserByToken(value);
-  }
-  return DB.getUser(value);
-}
-
-// setAuthCookie in the HTTP response
-function setAuthCookie(res, authToken) {
-  res.cookie(authCookieName, authToken, {
-    maxAge: 1000 * 60 * 60 * 24 * 365,
-    secure: true,
-    httpOnly: true,
-    sameSite: 'strict',
-  });
-}
-
-// ---------- HTTP + WebSocket server ----------
-
+/**
+ * Start server
+ */
 const server = app.listen(port, () => {
   console.log(`Listening on port ${port}`);
 });
 
-// Create WebSocket server (accepts connections on any path for this host)
+/**
+ * WebSocket server
+ */
 const wss = new WebSocket.Server({ server });
 
-// Helper to broadcast the current scores to all connected clients
-function broadcastScores(scores) {
-  const payload = JSON.stringify({
-    type: 'scores_update',
-    scores,
-  });
-
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
-}
-
-wss.on('connection', async (ws) => {
+wss.on('connection', (ws) => {
   console.log('WebSocket client connected');
 
-  // Send current high scores to this client on connect
-  try {
-    const scores = await DB.getHighScores();
-    ws.send(
-      JSON.stringify({
-        type: 'scores_update',
-        scores,
-      })
-    );
-  } catch (err) {
-    console.error('Failed to send initial scores over WebSocket', err);
-  }
-
   ws.on('message', (msg) => {
-    console.log('Received via WebSocket:', msg.toString());
+    console.log('Received:', msg.toString());
 
-    // Optional echo back for debugging
-    ws.send(
-      JSON.stringify({
-        type: 'echo',
-        message: 'Server received: ' + msg,
-      })
-    );
+    // Echo back, or broadcast if needed
+    ws.send(JSON.stringify({ message: 'Server received: ' + msg.toString() }));
   });
 
-  ws.on('close', () => {
-    console.log('WebSocket client disconnected');
-  });
-
-  // Optional welcome message
-  ws.send(
-    JSON.stringify({
-      type: 'welcome',
-      message: 'Welcome to the Startup WebSocket!',
-    })
-  );
+  ws.send(JSON.stringify({ message: 'Welcome to the Startup WebSocket!' }));
 });
+
+function getEmailFromBody(req) {
+  return req.body.email ?? req.body.username; // supports both
+}

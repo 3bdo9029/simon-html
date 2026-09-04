@@ -68,11 +68,19 @@ I am going to use the required technologies in the following ways:
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
 
+## React part1
+
+For this deliverable I converted the application into a React single page application bundled by Vite, with client-side routing between components.
+
+- [x] **Bundled using Vite** - The app builds with `npm run build` from [vite.config.js](./vite.config.js), with the entry point in [index.html](./index.html) loading [src/main.jsx](./src/main.jsx).
+- [x] **Components** - Each page of the app is a functional React component: [Index](./src/index/Index.jsx) (login/landing), [Dashboard](./src/dashboard/Dashboard.jsx), [Planner](./src/planner/Planner.jsx), [Contributions](./src/contributions/Contributions.jsx), and [About](./src/about/About.jsx). The shared header (with nav and login state) and footer live once in [App.jsx](./src/App.jsx) instead of being duplicated per page.
+- [x] **Router** - [App.jsx](./src/App.jsx) uses `react-router-dom`'s `BrowserRouter`, with `<NavLink>` elements in the nav and a `<Routes>` block mapping `/`, `/Dashboard`, `/Planner`, `/Contributions`, and `/About` to their components.
+
 ## CSS Deliverable
 
 For this deliverable I styled the application into its final appearance.
 
-- [x] **Header, footer, and main content body** - Every page shares a consistent header with the SidePot wordmark, a boxed navigation bar, a grid `main` content area, and a footer with attribution and the GitHub link. Shared styles live in [main.css](./main.css); page-specific styles live in [index.css](./index.css), [dashboard.css](./dashboard.css), [planner.css](./planner.css), and [contributions.css](./contributions.css).
+- [x] **Header, footer, and main content body** - Every page shares a consistent header with the SidePot wordmark, a boxed navigation bar, a grid `main` content area, and a footer with attribution and the GitHub link. Shared styles live in `main.css`; page-specific styles live in `index.css`, `dashboard.css`, `planner.css`, and `contributions.css`.
 - [x] **Navigation elements** - The nav is a flex `<ul>` of pill-shaped links sized with padding and `em` units (no fixed pixel widths), with hover and focus states and the current page highlighted in blue via `a[href$="..."]` selectors.
 - [x] **Responsive to window resizing** - Layouts use CSS Grid with `minmax()` and `clamp()` for type; two-column grids collapse to one column under 720px (900px for the planner card grid), and the site respects the user's system theme with `prefers-color-scheme` dark mode across all pages.
 - [x] **Application elements** - Cards, collapsible dashboard panels, dropdown menus, pills, and buttons are styled consistently with shared radii, borders, shadows, and hover/active transitions.
@@ -117,7 +125,7 @@ This commit includes the foundational HTML structure for the **SidePot** applica
 
 ### ✅ Rubric Checklist
 
-- [x] **HTML pages** - Four pages, one for each component of the application: [index.html](./index.html) (login / landing), [dashboard.html](./dashboard.html), [planner.html](./planner.html), and [contributions.html](./contributions.html).
+- [x] **HTML pages** - Four pages, one for each component of the application: `index.html` (login / landing), `dashboard.html`, `planner.html`, and `contributions.html`.
 - [x] **Proper HTML tags** - Every page uses `<!DOCTYPE html>`, `<html lang="en">`, `<head>`, and `<body>`, with semantic structure throughout: `<header>`, `<nav>`, `<main>`, `<section>`, `<form>`, `<table>`, and `<footer>`.
 - [x] **Character set and viewport** - Each page declares `<meta charset="utf-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1">`.
 - [x] **Navigation / links** - A shared `<nav>` links every page to the other three, and the footer links out to the GitHub repository for this project.
