@@ -7,19 +7,6 @@ export function Index({ currentUser, setCurrentUser }) {
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('');
 
-  // Mocked login until the service milestone: succeed locally when the
-  // auth API is not deployed yet, and remember the session in localStorage.
-  function mockLogin() {
-    setCurrentUser(email);
-    try {
-      localStorage.setItem('sidepot-user', email);
-    } catch {
-      // ignore
-    }
-    setMsg('Logged in (mocked until the service is deployed).');
-    setPassword('');
-  }
-
   async function handleLogin(e) {
     e.preventDefault();
     setMsg('');
@@ -38,22 +25,14 @@ export function Index({ currentUser, setCurrentUser }) {
 
       if (res.ok) {
         setCurrentUser(email);
-        try {
-          localStorage.setItem('sidepot-user', email);
-        } catch {
-          // ignore
-        }
         setMsg(body.msg || 'Logged in.');
         setPassword('');
-      } else if (res.status === 404 || res.status === 502) {
-        // Auth service not deployed yet
-        mockLogin();
       } else {
         setMsg(body.msg || 'Login failed.');
       }
     } catch (err) {
       console.error('Error logging in', err);
-      mockLogin();
+      setMsg('Network error — could not reach the service.');
     }
   }
 
@@ -74,15 +53,16 @@ export function Index({ currentUser, setCurrentUser }) {
       const body = await res.json().catch(() => ({}));
 
       if (res.ok) {
-        setMsg(body.msg || 'Account created. You can now log in.');
-      } else if (res.status === 404 || res.status === 502) {
-        mockLogin();
+        // Registration also starts a session on the service
+        setCurrentUser(email);
+        setMsg(body.msg || 'Account created.');
+        setPassword('');
       } else {
         setMsg(body.msg || 'Error creating account.');
       }
     } catch (err) {
       console.error('Error creating account', err);
-      mockLogin();
+      setMsg('Network error — could not reach the service.');
     }
   }
 

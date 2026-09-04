@@ -22,29 +22,16 @@ export default function App() {
   // Check if already authenticated when the app loads
   useEffect(() => {
     async function checkAuth() {
-      let authenticated = false;
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const body = await res.json();
           if (body.authenticated) {
             setCurrentUser(body.username);
-            authenticated = true;
           }
         }
       } catch (err) {
         console.error('Error calling /api/auth/me', err);
-      }
-      if (!authenticated) {
-        // Mocked session until the service milestone: restore from localStorage
-        try {
-          const saved = localStorage.getItem('sidepot-user');
-          if (saved) {
-            setCurrentUser(saved);
-          }
-        } catch {
-          // localStorage unavailable — stay logged out
-        }
       }
       setAuthChecked(true);
     }
@@ -59,11 +46,6 @@ export default function App() {
       });
     } catch (err) {
       console.error('Error during logout', err);
-    }
-    try {
-      localStorage.removeItem('sidepot-user');
-    } catch {
-      // ignore
     }
     setCurrentUser(null);
   }

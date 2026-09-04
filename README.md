@@ -68,6 +68,16 @@ I am going to use the required technologies in the following ways:
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
 
+## Service deliverable
+
+For this deliverable I added a Node.js/Express backend that serves the frontend and provides the application's API.
+
+- [x] **Node.js/Express HTTP service** - [service/index.js](./service/index.js) creates an Express app (run with `npm start`) listening on port 4000, with JSON body parsing and cookie-based auth tokens.
+- [x] **Static middleware for frontend** - `app.use(express.static('public'))` serves the built React bundle, with an SPA fallback that returns `index.html` for client-side routes.
+- [x] **Calls third party service endpoints** - The backend proxies dogapi.dog via `GET /api/dogfact`; the About page's [DogFact.jsx](./src/about/DogFact.jsx) calls our own endpoint instead of the third party directly.
+- [x] **Backend provides service endpoints** - Auth (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` with bcrypt-hashed passwords and httpOnly cookie tokens), plus authenticated `GET/POST /api/planner` and `GET/POST /api/contributions` (in-memory until the database milestone).
+- [x] **Frontend calls service endpoints** - Login/register in [Index.jsx](./src/index/Index.jsx) (mocks removed), session restore in [App.jsx](./src/App.jsx), planner items in [Planner.jsx](./src/planner/Planner.jsx), and contributions in [Contributions.jsx](./src/contributions/Contributions.jsx) all use `fetch` against the service.
+
 ## React part 2
 
 For this deliverable I made the application fully reactive with React hooks, implementing every feature or mocking it out where the backend service is not deployed yet.

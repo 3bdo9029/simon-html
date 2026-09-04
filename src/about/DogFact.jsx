@@ -8,15 +8,15 @@ export function DogFact() {
 
     async function fetchFact() {
       try {
-        const response = await fetch("https://dogapi.dog/api/v2/facts", {
+        // Our Express backend proxies the third-party dogapi.dog service
+        const response = await fetch("/api/dogfact", {
           signal: controller.signal,
         });
         if (!response.ok) {
           throw new Error(`Dog fact request failed with status ${response.status}`);
         }
         const data = await response.json();
-        const text = data?.data?.[0]?.attributes?.body || "Dogs are awesome.";
-        setFact(text);
+        setFact(data?.fact || "Dogs are awesome.");
       } catch (err) {
         if (err.name === "AbortError") {
           return; // component unmounted — don't touch state
