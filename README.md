@@ -68,6 +68,17 @@ I am going to use the required technologies in the following ways:
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
 
+## CSS Deliverable
+
+For this deliverable I styled the application into its final appearance.
+
+- [x] **Header, footer, and main content body** - Every page shares a consistent header with the SidePot wordmark, a boxed navigation bar, a grid `main` content area, and a footer with attribution and the GitHub link. Shared styles live in [main.css](./main.css); page-specific styles live in [index.css](./index.css), [dashboard.css](./dashboard.css), [planner.css](./planner.css), and [contributions.css](./contributions.css).
+- [x] **Navigation elements** - The nav is a flex `<ul>` of pill-shaped links sized with padding and `em` units (no fixed pixel widths), with hover and focus states and the current page highlighted in blue via `a[href$="..."]` selectors.
+- [x] **Responsive to window resizing** - Layouts use CSS Grid with `minmax()` and `clamp()` for type; two-column grids collapse to one column under 720px (900px for the planner card grid), and the site respects the user's system theme with `prefers-color-scheme` dark mode across all pages.
+- [x] **Application elements** - Cards, collapsible dashboard panels, dropdown menus, pills, and buttons are styled consistently with shared radii, borders, shadows, and hover/active transitions.
+- [x] **Application text content** - Consistent system font stack, `clamp()`-scaled headings, tabular numerals for money values, and muted secondary text colors.
+- [x] **Application images** - The hero image and footer images are responsive (`max-width: 100%`) with rounded corners, borders, and soft shadows.
+
 ## HTML Deliverable
 
 ### 📄 Overview
