@@ -6,13 +6,15 @@ export function About() {
   return (
     <main>
       <p>
-        Simon is a repetitive memory game where you follow the demonstrated color sequence until you make a mistake. The
-        longer the sequence you repeat, the greater your score.
+        SidePot is a planner for self-employed people. Paychecks without an employer don&apos;t withhold taxes or fund
+        retirement automatically, so SidePot helps you estimate how much of each month&apos;s income to set aside for
+        taxes, compare Solo 401(k), SEP IRA, and Roth IRA contribution limits, and record what you actually put away. A
+        small anonymized live feed shows other people saving too, to keep you motivated.
       </p>
 
       <p>
-        The name Simon is a registered trademark of Milton-Bradley. Our use of the name and the game is for non-profit
-        educational use only. No part of this code or program should be used outside of that definition.
+        SidePot is an educational demo built for a web programming course. It is <strong>not</strong> tax or investment
+        advice — always confirm real numbers with a professional.
       </p>
 
       <div id="quote">
@@ -27,4 +29,3 @@ export function About() {
     </main>
   );
 }
-

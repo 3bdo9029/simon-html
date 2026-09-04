@@ -97,7 +97,7 @@ nav li a:focus-visible{
 nav li a:active{ transform: translateY(0); }
 
 /* Highlight current page — this file is for about.html */
-nav a[href$="about.html"]{
+nav a.active{
   background: var(--accent);
   color: var(--accent-contrast) !important;
 }

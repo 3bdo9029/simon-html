@@ -99,7 +99,7 @@ nav li a:focus-visible{
 }
 
 /* Highlight current page: planner.html */
-nav a[href$="planner.html"]{
+nav a.active{
   background: #2563eb;
   color: #ffffff;
 }

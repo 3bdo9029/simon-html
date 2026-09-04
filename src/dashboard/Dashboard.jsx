@@ -2,6 +2,81 @@
 import React, { useEffect, useState } from 'react';
 import './dashboard.css';
 
+// One collapsible dashboard section: owns the open/closed state of its
+// panel and kebab menu instead of hardcoded hidden attributes.
+function DashSection({ icon, label, panelId, menuItems, children }) {
+  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function togglePanel() {
+    setOpen((prev) => !prev);
+  }
+
+  return (
+    <section className="dash-item">
+      <div
+        className="dash-card"
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={togglePanel}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            togglePanel();
+          }
+        }}
+      >
+        <span className="icon">{icon}</span>
+        <span className="label">{label}</span>
+
+        <button
+          className="menu-trigger"
+          aria-label="More actions"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((prev) => !prev);
+          }}
+        >
+          ⋯
+        </button>
+
+        <svg className="chev" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M7 10l5 5 5-5z" />
+        </svg>
+
+        {menuOpen && (
+          <div className="dropdown open" role="menu">
+            {menuItems.map((item, i) => (
+              <React.Fragment key={item}>
+                {i === menuItems.length - 1 && <hr />}
+                <button
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                  }}
+                >
+                  {item}
+                </button>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {open && (
+        <div className="dash-panel" id={panelId}>
+          {children}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Dashboard() {
   const [status, setStatus] = useState('Connecting…');
   const [events, setEvents] = useState([]);
@@ -38,391 +113,168 @@ export function Dashboard() {
 
   return (
     <main>
-      {/* Live feed */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-live"
-        >
-          <span className="icon">📡</span>
-          <span className="label">Live feed &amp; averages (WebSocket)</span>
-
-          <button
-            className="menu-trigger"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-live"
-          >
-            ⋯
-          </button>
-
-          <svg className="chev" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          <div className="dropdown" id="menu-live" role="menu" hidden>
-            <button role="menuitem" data-action="pause">
-              Pause stream
-            </button>
-            <button role="menuitem" data-action="refresh">
-              Refresh
-            </button>
-            <hr />
-            <button role="menuitem" data-action="popout">
-              Pop out
-            </button>
-          </div>
+      <DashSection
+        icon="📡"
+        label="Live feed & averages (WebSocket)"
+        panelId="panel-live"
+        menuItems={['Pause stream', 'Refresh', 'Pop out']}
+      >
+        <div className="inset">
+          <label className="pill">
+            <input type="checkbox" defaultChecked /> Live updates
+          </label>
+          <label className="pill">
+            <input type="checkbox" /> Show 7-day avg
+          </label>
+          <label className="pill">
+            <input type="checkbox" /> Show 30-day avg
+          </label>
         </div>
 
-        <div className="dash-panel" id="panel-live" hidden>
-          <div className="inset">
-            <label className="pill">
-              <input type="checkbox" defaultChecked /> Live updates
-            </label>
-            <label className="pill">
-              <input type="checkbox" /> Show 7-day avg
-            </label>
-            <label className="pill">
-              <input type="checkbox" /> Show 30-day avg
-            </label>
-          </div>
-
-          {/* WebSocket status + feed */}
-          <div className="inset">
-            <p className="live-status">Status: {status}</p>
-            <ul className="live-list">
-              {events.map((e) => (
-                <li key={e.id}>{e.message}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="actions">
-            <button>Apply</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Deadlines */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-deadlines"
-        >
-          <span className="icon">⏰</span>
-          <span className="label">Next deadline &amp; reminders</span>
-
-          <button
-            className="menu-trigger"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-deadlines"
-          >
-            ⋯
-          </button>
-          <svg className="chev" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          <div className="dropdown" id="menu-deadlines" role="menu" hidden>
-            <button role="menuitem" data-action="add-reminder">
-              Add reminder
-            </button>
-            <button role="menuitem" data-action="sync-calendar">
-              Sync to calendar
-            </button>
-            <hr />
-            <button role="menuitem" data-action="help-deadlines">
-              Help
-            </button>
-          </div>
+        {/* WebSocket status + feed */}
+        <div className="inset">
+          <p className="live-status">Status: {status}</p>
+          <ul className="live-list">
+            {events.map((e) => (
+              <li key={e.id}>{e.message}</li>
+            ))}
+          </ul>
         </div>
 
-        <div className="dash-panel" id="panel-deadlines" hidden>
-          <div className="inset">
-            <label className="field">
-              Next due date <input type="date" />
-            </label>
-            <label className="field">
-              Notify me
-              <select>
-                <option>3 days before</option>
-                <option>1 week before</option>
-                <option>2 weeks before</option>
-              </select>
-            </label>
-          </div>
-          <div className="actions">
-            <button>Set reminder</button>
-          </div>
+        <div className="actions">
+          <button>Apply</button>
         </div>
-      </section>
+      </DashSection>
 
-      {/* Pick a plan */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-plan"
-        >
-          <span className="icon">🧭</span>
-          <span className="label">
-            Pick a plan (Solo 401(k), SEP IRA, Roth IRA)
-          </span>
-
-          {/* kebab trigger */}
-          <button
-            className="menu-trigger"
-            aria-label="More actions"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-plan"
-          >
-            ⋯
-          </button>
-
-          {/* caret */}
-          <svg
-            className="chev"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          {/* dropdown menu */}
-          <div className="dropdown" id="menu-plan" role="menu" hidden>
-            <button role="menuitem" data-action="reset-plan">
-              Reset selection
-            </button>
-            <button role="menuitem" data-action="help-plan">
-              Help / Docs
-            </button>
-            <hr />
-            <button role="menuitem" data-action="remove-card">
-              Hide from dashboard
-            </button>
-          </div>
+      <DashSection
+        icon="⏰"
+        label="Next deadline & reminders"
+        panelId="panel-deadlines"
+        menuItems={['Add reminder', 'Sync to calendar', 'Help']}
+      >
+        <div className="inset">
+          <label className="field">
+            Next due date <input type="date" />
+          </label>
+          <label className="field">
+            Notify me
+            <select>
+              <option>3 days before</option>
+              <option>1 week before</option>
+              <option>2 weeks before</option>
+            </select>
+          </label>
         </div>
-
-        <div className="dash-panel" id="panel-plan" hidden>
-          <div className="inset">
-            <label className="pill">
-              <input type="radio" name="plan" value="solo401k" /> Solo 401(k)
-            </label>
-            <label className="pill">
-              <input type="radio" name="plan" value="sep" /> SEP IRA
-            </label>
-            <label className="pill">
-              <input type="radio" name="plan" value="roth" /> Roth IRA
-            </label>
-          </div>
-          <div className="actions">
-            <button>Save selection</button>
-          </div>
+        <div className="actions">
+          <button>Set reminder</button>
         </div>
-      </section>
+      </DashSection>
 
-      {/* Estimator */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-estimator"
-        >
-          <span className="icon">💸</span>
-          <span className="label">Quarterly tax estimator</span>
-
-          <button
-            className="menu-trigger"
-            aria-label="More actions"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-estimator"
-          >
-            ⋯
-          </button>
-
-          <svg className="chev" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          <div className="dropdown" id="menu-estimator" role="menu" hidden>
-            <button role="menuitem" data-action="history">
-              View history
-            </button>
-            <button role="menuitem" data-action="clear-estimator">
-              Clear inputs
-            </button>
-            <hr />
-            <button role="menuitem" data-action="help-estimator">
-              Help
-            </button>
-          </div>
+      <DashSection
+        icon="🧭"
+        label="Pick a plan (Solo 401(k), SEP IRA, Roth IRA)"
+        panelId="panel-plan"
+        menuItems={['Reset selection', 'Help / Docs', 'Hide from dashboard']}
+      >
+        <div className="inset">
+          <label className="pill">
+            <input type="radio" name="plan" value="solo401k" /> Solo 401(k)
+          </label>
+          <label className="pill">
+            <input type="radio" name="plan" value="sep" /> SEP IRA
+          </label>
+          <label className="pill">
+            <input type="radio" name="plan" value="roth" /> Roth IRA
+          </label>
         </div>
-
-        <div className="dash-panel" id="panel-estimator" hidden>
-          <div className="inset">
-            <label className="field">
-              Quarter{' '}
-              <select>
-                <option>Q1</option>
-                <option>Q2</option>
-                <option>Q3</option>
-                <option>Q4</option>
-              </select>
-            </label>
-            <label className="field">
-              Estimated net income{' '}
-              <input type="number" placeholder="e.g., 24000" />
-            </label>
-            <label className="field">
-              % set-aside <input type="number" placeholder="e.g., 30" />
-            </label>
-          </div>
-          <div className="actions">
-            <button>Estimate</button>
-          </div>
+        <div className="actions">
+          <button>Save selection</button>
         </div>
-      </section>
+      </DashSection>
 
-      {/* Record a set-aside */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-record"
-        >
-          <span className="icon">📝</span>
-          <span className="label">Record a set-aside</span>
-
-          <button
-            className="menu-trigger"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-record"
-          >
-            ⋯
-          </button>
-          <svg className="chev" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          <div className="dropdown" id="menu-record" role="menu" hidden>
-            <button role="menuitem" data-action="quick-100">
-              Quick add $100
-            </button>
-            <button role="menuitem" data-action="quick-500">
-              Quick add $500
-            </button>
-            <hr />
-            <button role="menuitem" data-action="undo-last">
-              Undo last
-            </button>
-          </div>
+      <DashSection
+        icon="💸"
+        label="Quarterly tax estimator"
+        panelId="panel-estimator"
+        menuItems={['View history', 'Clear inputs', 'Help']}
+      >
+        <div className="inset">
+          <label className="field">
+            Quarter{' '}
+            <select>
+              <option>Q1</option>
+              <option>Q2</option>
+              <option>Q3</option>
+              <option>Q4</option>
+            </select>
+          </label>
+          <label className="field">
+            Estimated net income <input type="number" placeholder="e.g., 24000" />
+          </label>
+          <label className="field">
+            % set-aside <input type="number" placeholder="e.g., 30" />
+          </label>
         </div>
-
-        <div className="dash-panel" id="panel-record" hidden>
-          <div className="inset">
-            <label className="field">
-              Amount <input type="number" placeholder="e.g., 500" />
-            </label>
-            <label className="field">
-              Date <input type="date" />
-            </label>
-            <label className="field">
-              Account
-              <select>
-                <option>Solo 401(k)</option>
-                <option>SEP IRA</option>
-                <option>Roth IRA</option>
-              </select>
-            </label>
-          </div>
-          <div className="actions">
-            <button>Save</button>
-          </div>
+        <div className="actions">
+          <button>Estimate</button>
         </div>
-      </section>
+      </DashSection>
 
-      {/* Contributions */}
-      <section className="dash-item">
-        <div
-          className="dash-card"
-          role="button"
-          tabIndex={0}
-          aria-expanded="false"
-          aria-controls="panel-contribs"
-        >
-          <span className="icon">📊</span>
-          <span className="label">
-            Your contributions (table: date, account, amount)
-          </span>
-
-          <button
-            className="menu-trigger"
-            aria-haspopup="menu"
-            aria-expanded="false"
-            aria-controls="menu-contribs"
-          >
-            ⋯
-          </button>
-          <svg className="chev" width="18" height="18" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M7 10l5 5 5-5z" />
-          </svg>
-
-          <div className="dropdown" id="menu-contribs" role="menu" hidden>
-            <button role="menuitem" data-action="export-csv">
-              Export CSV
-            </button>
-            <button role="menuitem" data-action="export-pdf">
-              Export PDF
-            </button>
-            <hr />
-            <button role="menuitem" data-action="columns">
-              Column preferences
-            </button>
-          </div>
+      <DashSection
+        icon="📝"
+        label="Record a set-aside"
+        panelId="panel-record"
+        menuItems={['Quick add $100', 'Quick add $500', 'Undo last']}
+      >
+        <div className="inset">
+          <label className="field">
+            Amount <input type="number" placeholder="e.g., 500" />
+          </label>
+          <label className="field">
+            Date <input type="date" />
+          </label>
+          <label className="field">
+            Account
+            <select>
+              <option>Solo 401(k)</option>
+              <option>SEP IRA</option>
+              <option>Roth IRA</option>
+            </select>
+          </label>
         </div>
-
-        <div className="dash-panel" id="panel-contribs" hidden>
-          <div className="inset">
-            <label className="field">
-              From <input type="date" />
-            </label>
-            <label className="field">
-              To <input type="date" />
-            </label>
-            <label className="field">
-              Account
-              <select>
-                <option>All</option>
-                <option>Solo 401(k)</option>
-                <option>SEP IRA</option>
-                <option>Roth IRA</option>
-              </select>
-            </label>
-          </div>
-          <div className="actions">
-            <button>Filter</button>
-            <button className="secondary">Export CSV</button>
-          </div>
+        <div className="actions">
+          <button>Save</button>
         </div>
-      </section>
+      </DashSection>
+
+      <DashSection
+        icon="📊"
+        label="Your contributions (table: date, account, amount)"
+        panelId="panel-contribs"
+        menuItems={['Export CSV', 'Export PDF', 'Column preferences']}
+      >
+        <div className="inset">
+          <label className="field">
+            From <input type="date" />
+          </label>
+          <label className="field">
+            To <input type="date" />
+          </label>
+          <label className="field">
+            Account
+            <select>
+              <option>All</option>
+              <option>Solo 401(k)</option>
+              <option>SEP IRA</option>
+              <option>Roth IRA</option>
+            </select>
+          </label>
+        </div>
+        <div className="actions">
+          <button>Filter</button>
+          <button className="secondary">Export CSV</button>
+        </div>
+      </DashSection>
     </main>
   );
 }

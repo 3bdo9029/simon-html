@@ -1,7 +1,7 @@
 {
   "name": "sidepot",
   "version": "1.0.0",
-  "description": "[My Notes](notes.md)",
+  "description": "SidePot - a tax and retirement set-aside planner for self-employed people",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
@@ -9,12 +9,12 @@
     "preview": "vite preview"
   },
   "keywords": [],
-  "author": "",
+  "author": "Abe Farghali",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/webprogramming260/simon-css/issues"
+    "url": "https://github.com/3bdo9029/SidePot/issues"
   },
-  "homepage": "https://github.com/webprogramming260/simon-css#readme",
+  "homepage": "https://github.com/3bdo9029/SidePot#readme",
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^4.2.2",
     "vite": "^7.2.2"
