@@ -18,7 +18,8 @@ app.use(express.json());
 // Cookie parsing for auth tokens
 app.use(cookieParser());
 
-// Serve the built frontend
+// Serve the built frontend. The deploy step copies Vite's dist output
+// into public/ next to this file (see build assembly in deployService flow).
 app.use(express.static('public'));
 
 const apiRouter = express.Router();
@@ -145,7 +146,7 @@ apiRouter.get('/dogfact', async (_req, res) => {
     const fact = data?.data?.[0]?.attributes?.body || 'Dogs are awesome.';
     res.send({ fact });
   } catch (err) {
-    console.error('Dog fact proxy failed', err);
+    console.error(`Dog fact proxy failed: ${err.message}`);
     res.status(502).send({ msg: 'Could not reach the dog fact service' });
   }
 });

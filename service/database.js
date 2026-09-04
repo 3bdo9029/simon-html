@@ -1,5 +1,15 @@
 const { MongoClient } = require('mongodb');
-const config = require('./dbConfig.json');
+
+// Prefer environment variables; fall back to dbConfig.json (kept out of
+// the repository and deployed to the server separately).
+let config = {
+  hostname: process.env.MONGO_HOSTNAME,
+  userName: process.env.MONGO_USER,
+  password: process.env.MONGO_PASSWORD,
+};
+if (!config.hostname || !config.userName || !config.password) {
+  config = require('./dbConfig.json');
+}
 
 const url = `mongodb+srv://${config.userName}:${config.password}@${config.hostname}`;
 const client = new MongoClient(url);

@@ -1,36 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './contributions.css';
 
-const STORAGE_KEY = 'sidepot-contributions';
-
-// Seed rows used only when neither the API nor localStorage has data
-const seedContributions = [
-  { id: 1, date: '2026-08-15', type: 'Tax set-aside', amount: 400 },
-  { id: 2, date: '2026-08-01', type: 'Solo 401(k)', amount: 250 },
-  { id: 3, date: '2026-07-15', type: 'Roth IRA', amount: 150 },
-];
-
-function loadLocal() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // fall through to seed data
-  }
-  return seedContributions;
-}
-
-function saveLocal(contributions) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(contributions));
-  } catch {
-    // ignore
-  }
-}
-
 export function Contributions() {
   const [contributions, setContributions] = useState([]);
   const [type, setType] = useState('Tax set-aside');
@@ -39,8 +9,7 @@ export function Contributions() {
   const [status, setStatus] = useState('Loading…');
   const [csvUrl, setCsvUrl] = useState(null);
 
-  // Load from the service; until it is deployed, fall back to
-  // localStorage (or seed data) so the list survives a refresh.
+  // The database is the single source of truth for contributions
   useEffect(() => {
     async function loadContributions() {
       try {
@@ -49,9 +18,9 @@ export function Contributions() {
         const data = await res.json();
         setContributions(Array.isArray(data) ? data : []);
         setStatus('');
-      } catch {
-        setContributions(loadLocal());
-        setStatus('Showing locally saved data (service not deployed yet).');
+      } catch (err) {
+        console.error('Failed to load contributions', err);
+        setStatus('Could not load contributions.');
       }
     }
     loadContributions();
@@ -71,33 +40,28 @@ export function Contributions() {
       return;
     }
 
-    const entry = {
-      id: Date.now(),
-      date: date || new Date().toISOString().slice(0, 10),
-      type,
-      amount: value,
-    };
-
     try {
       const res = await fetch('/api/contributions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry),
+        body: JSON.stringify({
+          date: date || new Date().toISOString().slice(0, 10),
+          type,
+          amount: value,
+        }),
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
-      setStatus('Saved to the service.');
-    } catch {
-      setStatus('Saved locally (service not deployed yet).');
-    }
 
-    setContributions((prev) => {
-      const next = [entry, ...prev];
-      saveLocal(next);
-      return next;
-    });
-    setAmount('');
-    setDate('');
-    setCsvUrl(null); // stale export
+      const created = await res.json();
+      setContributions((prev) => [created, ...prev]);
+      setAmount('');
+      setDate('');
+      setCsvUrl(null); // stale export
+      setStatus('Saved.');
+    } catch (err) {
+      console.error('Failed to save contribution', err);
+      setStatus('Could not save contribution.');
+    }
   }
 
   function handleGenerateCsv() {
