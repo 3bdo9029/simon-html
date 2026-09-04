@@ -77,48 +77,10 @@ function DashSection({ icon, label, panelId, menuItems, children }) {
   );
 }
 
-export function Dashboard() {
+// Live WebSocket feed: connects while the panel is open, cleans up on close
+function LiveFeedPanel() {
   const [status, setStatus] = useState('Connecting…');
   const [events, setEvents] = useState([]);
-
-  // Pick-a-plan state (persisted locally until the service milestone)
-  const [selectedPlan, setSelectedPlan] = useState(() => {
-    try {
-      return localStorage.getItem('sidepot-plan') || '';
-    } catch {
-      return '';
-    }
-  });
-  const [planStatus, setPlanStatus] = useState('');
-
-  function handleSavePlan() {
-    if (!selectedPlan) {
-      setPlanStatus('Pick a plan first.');
-      return;
-    }
-    try {
-      localStorage.setItem('sidepot-plan', selectedPlan);
-    } catch {
-      // ignore
-    }
-    setPlanStatus(`Saved: ${selectedPlan}`);
-  }
-
-  // Quarterly estimator state
-  const [quarter, setQuarter] = useState('Q1');
-  const [income, setIncome] = useState('');
-  const [pct, setPct] = useState('');
-  const [estimate, setEstimate] = useState(null);
-
-  function handleEstimate() {
-    const inc = Number(income);
-    const p = Number(pct);
-    if (!inc || inc <= 0 || !p || p <= 0) {
-      setEstimate(null);
-      return;
-    }
-    setEstimate(Math.round(inc * (p / 100)));
-  }
 
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -151,203 +113,266 @@ export function Dashboard() {
   }, []);
 
   return (
+    <>
+      <div className="inset">
+        <label className="pill">
+          <input type="checkbox" defaultChecked /> Live updates
+        </label>
+        <label className="pill">
+          <input type="checkbox" /> Show 7-day avg
+        </label>
+        <label className="pill">
+          <input type="checkbox" /> Show 30-day avg
+        </label>
+      </div>
+
+      <div className="inset">
+        <p className="live-status">Status: {status}</p>
+        <ul className="live-list">
+          {events.map((e) => (
+            <li key={e.id}>{e.message}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="actions">
+        <button>Apply</button>
+      </div>
+    </>
+  );
+}
+
+function DeadlinesPanel() {
+  return (
+    <>
+      <div className="inset">
+        <label className="field">
+          Next due date <input type="date" />
+        </label>
+        <label className="field">
+          Notify me
+          <select>
+            <option>3 days before</option>
+            <option>1 week before</option>
+            <option>2 weeks before</option>
+          </select>
+        </label>
+      </div>
+      <div className="actions">
+        <button>Set reminder</button>
+      </div>
+    </>
+  );
+}
+
+// Plan choice is controlled state, persisted locally until the service milestone
+function PlanPanel() {
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    try {
+      return localStorage.getItem('sidepot-plan') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [planStatus, setPlanStatus] = useState('');
+
+  function handleSavePlan() {
+    if (!selectedPlan) {
+      setPlanStatus('Pick a plan first.');
+      return;
+    }
+    try {
+      localStorage.setItem('sidepot-plan', selectedPlan);
+    } catch {
+      // ignore
+    }
+    setPlanStatus(`Saved: ${selectedPlan}`);
+  }
+
+  const plans = ['Solo 401(k)', 'SEP IRA', 'Roth IRA'];
+
+  return (
+    <>
+      <div className="inset">
+        {plans.map((plan) => (
+          <label className="pill" key={plan}>
+            <input
+              type="radio"
+              name="plan"
+              value={plan}
+              checked={selectedPlan === plan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            />{' '}
+            {plan}
+          </label>
+        ))}
+      </div>
+      <div className="actions">
+        <button onClick={handleSavePlan}>Save selection</button>
+      </div>
+      {planStatus && <p className="live-status">{planStatus}</p>}
+    </>
+  );
+}
+
+// Estimator inputs are controlled state; Estimate computes the set-aside
+function EstimatorPanel() {
+  const [quarter, setQuarter] = useState('Q1');
+  const [income, setIncome] = useState('');
+  const [pct, setPct] = useState('');
+  const [estimate, setEstimate] = useState(null);
+
+  function handleEstimate() {
+    const inc = Number(income);
+    const p = Number(pct);
+    if (!inc || inc <= 0 || !p || p <= 0) {
+      setEstimate(null);
+      return;
+    }
+    setEstimate(Math.round(inc * (p / 100)));
+  }
+
+  return (
+    <>
+      <div className="inset">
+        <label className="field">
+          Quarter{' '}
+          <select value={quarter} onChange={(e) => setQuarter(e.target.value)}>
+            <option>Q1</option>
+            <option>Q2</option>
+            <option>Q3</option>
+            <option>Q4</option>
+          </select>
+        </label>
+        <label className="field">
+          Estimated net income{' '}
+          <input type="number" placeholder="e.g., 24000" value={income} onChange={(e) => setIncome(e.target.value)} />
+        </label>
+        <label className="field">
+          % set-aside{' '}
+          <input type="number" placeholder="e.g., 30" value={pct} onChange={(e) => setPct(e.target.value)} />
+        </label>
+      </div>
+      <div className="actions">
+        <button onClick={handleEstimate}>Estimate</button>
+      </div>
+      {estimate !== null && (
+        <p className="live-status">
+          Set aside ${estimate.toLocaleString()} for {quarter}.
+        </p>
+      )}
+    </>
+  );
+}
+
+function RecordPanel() {
+  return (
+    <>
+      <div className="inset">
+        <label className="field">
+          Amount <input type="number" placeholder="e.g., 500" />
+        </label>
+        <label className="field">
+          Date <input type="date" />
+        </label>
+        <label className="field">
+          Account
+          <select>
+            <option>Solo 401(k)</option>
+            <option>SEP IRA</option>
+            <option>Roth IRA</option>
+          </select>
+        </label>
+      </div>
+      <div className="actions">
+        <button>Save</button>
+      </div>
+    </>
+  );
+}
+
+function ContributionsFilterPanel() {
+  return (
+    <>
+      <div className="inset">
+        <label className="field">
+          From <input type="date" />
+        </label>
+        <label className="field">
+          To <input type="date" />
+        </label>
+        <label className="field">
+          Account
+          <select>
+            <option>All</option>
+            <option>Solo 401(k)</option>
+            <option>SEP IRA</option>
+            <option>Roth IRA</option>
+          </select>
+        </label>
+      </div>
+      <div className="actions">
+        <button>Filter</button>
+        <button className="secondary">Export CSV</button>
+      </div>
+    </>
+  );
+}
+
+// Section configuration drives the dashboard layout
+const SECTIONS = [
+  {
+    icon: '📡',
+    label: 'Live feed & averages (WebSocket)',
+    panelId: 'panel-live',
+    menuItems: ['Pause stream', 'Refresh', 'Pop out'],
+    Panel: LiveFeedPanel,
+  },
+  {
+    icon: '⏰',
+    label: 'Next deadline & reminders',
+    panelId: 'panel-deadlines',
+    menuItems: ['Add reminder', 'Sync to calendar', 'Help'],
+    Panel: DeadlinesPanel,
+  },
+  {
+    icon: '🧭',
+    label: 'Pick a plan (Solo 401(k), SEP IRA, Roth IRA)',
+    panelId: 'panel-plan',
+    menuItems: ['Reset selection', 'Help / Docs', 'Hide from dashboard'],
+    Panel: PlanPanel,
+  },
+  {
+    icon: '💸',
+    label: 'Quarterly tax estimator',
+    panelId: 'panel-estimator',
+    menuItems: ['View history', 'Clear inputs', 'Help'],
+    Panel: EstimatorPanel,
+  },
+  {
+    icon: '📝',
+    label: 'Record a set-aside',
+    panelId: 'panel-record',
+    menuItems: ['Quick add $100', 'Quick add $500', 'Undo last'],
+    Panel: RecordPanel,
+  },
+  {
+    icon: '📊',
+    label: 'Your contributions (table: date, account, amount)',
+    panelId: 'panel-contribs',
+    menuItems: ['Export CSV', 'Export PDF', 'Column preferences'],
+    Panel: ContributionsFilterPanel,
+  },
+];
+
+export function Dashboard() {
+  return (
     <main className="dashboard-main">
-      <DashSection
-        icon="📡"
-        label="Live feed & averages (WebSocket)"
-        panelId="panel-live"
-        menuItems={['Pause stream', 'Refresh', 'Pop out']}
-      >
-        <div className="inset">
-          <label className="pill">
-            <input type="checkbox" defaultChecked /> Live updates
-          </label>
-          <label className="pill">
-            <input type="checkbox" /> Show 7-day avg
-          </label>
-          <label className="pill">
-            <input type="checkbox" /> Show 30-day avg
-          </label>
-        </div>
-
-        {/* WebSocket status + feed */}
-        <div className="inset">
-          <p className="live-status">Status: {status}</p>
-          <ul className="live-list">
-            {events.map((e) => (
-              <li key={e.id}>{e.message}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="actions">
-          <button>Apply</button>
-        </div>
-      </DashSection>
-
-      <DashSection
-        icon="⏰"
-        label="Next deadline & reminders"
-        panelId="panel-deadlines"
-        menuItems={['Add reminder', 'Sync to calendar', 'Help']}
-      >
-        <div className="inset">
-          <label className="field">
-            Next due date <input type="date" />
-          </label>
-          <label className="field">
-            Notify me
-            <select>
-              <option>3 days before</option>
-              <option>1 week before</option>
-              <option>2 weeks before</option>
-            </select>
-          </label>
-        </div>
-        <div className="actions">
-          <button>Set reminder</button>
-        </div>
-      </DashSection>
-
-      <DashSection
-        icon="🧭"
-        label="Pick a plan (Solo 401(k), SEP IRA, Roth IRA)"
-        panelId="panel-plan"
-        menuItems={['Reset selection', 'Help / Docs', 'Hide from dashboard']}
-      >
-        <div className="inset">
-          <label className="pill">
-            <input
-              type="radio"
-              name="plan"
-              value="Solo 401(k)"
-              checked={selectedPlan === 'Solo 401(k)'}
-              onChange={(e) => setSelectedPlan(e.target.value)}
-            />{' '}
-            Solo 401(k)
-          </label>
-          <label className="pill">
-            <input
-              type="radio"
-              name="plan"
-              value="SEP IRA"
-              checked={selectedPlan === 'SEP IRA'}
-              onChange={(e) => setSelectedPlan(e.target.value)}
-            />{' '}
-            SEP IRA
-          </label>
-          <label className="pill">
-            <input
-              type="radio"
-              name="plan"
-              value="Roth IRA"
-              checked={selectedPlan === 'Roth IRA'}
-              onChange={(e) => setSelectedPlan(e.target.value)}
-            />{' '}
-            Roth IRA
-          </label>
-        </div>
-        <div className="actions">
-          <button onClick={handleSavePlan}>Save selection</button>
-        </div>
-        {planStatus && <p className="live-status">{planStatus}</p>}
-      </DashSection>
-
-      <DashSection
-        icon="💸"
-        label="Quarterly tax estimator"
-        panelId="panel-estimator"
-        menuItems={['View history', 'Clear inputs', 'Help']}
-      >
-        <div className="inset">
-          <label className="field">
-            Quarter{' '}
-            <select value={quarter} onChange={(e) => setQuarter(e.target.value)}>
-              <option>Q1</option>
-              <option>Q2</option>
-              <option>Q3</option>
-              <option>Q4</option>
-            </select>
-          </label>
-          <label className="field">
-            Estimated net income{' '}
-            <input
-              type="number"
-              placeholder="e.g., 24000"
-              value={income}
-              onChange={(e) => setIncome(e.target.value)}
-            />
-          </label>
-          <label className="field">
-            % set-aside{' '}
-            <input type="number" placeholder="e.g., 30" value={pct} onChange={(e) => setPct(e.target.value)} />
-          </label>
-        </div>
-        <div className="actions">
-          <button onClick={handleEstimate}>Estimate</button>
-        </div>
-        {estimate !== null && (
-          <p className="live-status">
-            Set aside ${estimate.toLocaleString()} for {quarter}.
-          </p>
-        )}
-      </DashSection>
-
-      <DashSection
-        icon="📝"
-        label="Record a set-aside"
-        panelId="panel-record"
-        menuItems={['Quick add $100', 'Quick add $500', 'Undo last']}
-      >
-        <div className="inset">
-          <label className="field">
-            Amount <input type="number" placeholder="e.g., 500" />
-          </label>
-          <label className="field">
-            Date <input type="date" />
-          </label>
-          <label className="field">
-            Account
-            <select>
-              <option>Solo 401(k)</option>
-              <option>SEP IRA</option>
-              <option>Roth IRA</option>
-            </select>
-          </label>
-        </div>
-        <div className="actions">
-          <button>Save</button>
-        </div>
-      </DashSection>
-
-      <DashSection
-        icon="📊"
-        label="Your contributions (table: date, account, amount)"
-        panelId="panel-contribs"
-        menuItems={['Export CSV', 'Export PDF', 'Column preferences']}
-      >
-        <div className="inset">
-          <label className="field">
-            From <input type="date" />
-          </label>
-          <label className="field">
-            To <input type="date" />
-          </label>
-          <label className="field">
-            Account
-            <select>
-              <option>All</option>
-              <option>Solo 401(k)</option>
-              <option>SEP IRA</option>
-              <option>Roth IRA</option>
-            </select>
-          </label>
-        </div>
-        <div className="actions">
-          <button>Filter</button>
-          <button className="secondary">Export CSV</button>
-        </div>
-      </DashSection>
+      {SECTIONS.map(({ Panel, ...section }) => (
+        <DashSection key={section.panelId} {...section}>
+          <Panel />
+        </DashSection>
+      ))}
     </main>
   );
 }
