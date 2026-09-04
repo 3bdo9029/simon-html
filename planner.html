@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SidePot - Planner</title>
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="planner.css" />
+
+</head>
+<body>
+  <header>
+    <h1>SidePot<sup>&reg;</sup></h1>
+    <nav>
+      <menu>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="planner.html">Planner</a></li>
+        <li><a href="contributions.html">Contributions</a></li>
+      </menu>
+    </nav>
+    <hr />
+  </header>
+
+  <main>
+    <h2>Planner (Tax & Retirement)</h2>
+
+    <section class="card">
+      <h3>Inputs</h3>
+      <form>
+        <label for="income">Income</label>
+        <input type="number" id="income" placeholder="85000" />
+        <label for="expenses">Expenses</label>
+        <input type="number" id="expenses" placeholder="12000" />
+        <label for="filing">Filing status</label>
+        <select id="filing"><option>Single</option><option>Married filing jointly</option></select>
+        <label for="state">State</label>
+        <input type="text" id="state" placeholder="UT" />
+        <button type="submit">Estimate</button>
+      </form>
+    </section>
+
+    <!-- Application logic placeholder: POST /api/planner/estimate will compute these -->
+    <section class="card">
+      <h3>Results</h3>
+      <p>Estimated set-aside: <strong>22%</strong> ≈ <strong>$1,340/month</strong> (placeholder values)</p>
+      <p>Contribution limits: Solo 401(k) $70,000 · SEP IRA $70,000 · Roth IRA $7,000 (placeholder cards)</p>
+    </section>
+
+    <!-- 3rd-party API placeholder: server-side call to the free FX API will fill this in -->
+    <section class="card">
+      <h3>FX helper (3rd-party API)</h3>
+      <p>€1,000 invoice ≈ <strong>$1,080 USD</strong> <em>(placeholder — live rate from FX service later)</em></p>
+    </section>
+
+    <div class="card">Click ‘Record set-aside’</div>
+  </main>
+
+  <footer>
+    <hr />
+    <span class="text-reset">By Abe Farghali</span><br />
+    <a href="https://github.com/3bdo9029/simon-html/">GitHub</a>
+  </footer>
+</body>
+</html>
