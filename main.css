@@ -83,6 +83,13 @@ nav li a:focus-visible{
   outline: none;
 }
 
+/* Logged-in user placeholder in the header */
+#username{
+  margin-left: auto;
+  color: #64748b;
+  font-size: .9rem;
+}
+
 /* Overview cards */
 #platform-overview,
 [id="Platform Overview"]{
