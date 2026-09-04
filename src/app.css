@@ -14,7 +14,7 @@ body{
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-img{ max-width: 100%; height: auto; diqsplay: block; }
+img{ max-width: 100%; height: auto; display: block; }
 a{ color: #2563eb; text-decoration: none; }
 a:hover{ text-decoration: underline; }
 menu, ul, ol{ list-style: none; padding: 0; margin: 0; }
@@ -70,7 +70,7 @@ header nav{
   border-radius: 12px;
   box-shadow: 0 8px 28px rgba(2, 6, 23, .06);
 }
-nav menu{
+nav menu, nav ul{
   display: flex;
   gap: 6px;
   padding: 6px;
@@ -82,18 +82,13 @@ nav li{
 }
 
 nav li a{
-  width: 124.17px;
-  height: 45.59px;
-  padding: 0;
+  padding: .7em 1.1em;
+  min-width: 7em;
   display: flex;
   border-radius: 10px;
   align-items: center;
   justify-content: center;
   text-align: center;
-  white-space: wrap;
-  overflow: hidden;
-  gap: 24px;
-  text-overflow: ellipsis;
   color: #000000;
   transition: transform .12s ease, background-color .12s ease, color .12s ease;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.05);

@@ -112,7 +112,7 @@ export function Dashboard() {
   }, []);
 
   return (
-    <main>
+    <main className="dashboard-main">
       <DashSection
         icon="📡"
         label="Live feed & averages (WebSocket)"

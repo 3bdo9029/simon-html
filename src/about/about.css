@@ -1,163 +1,25 @@
-/* Basic variables (light mode) */
-:root{
-  --bg: #f8fafc;          /* slate-50 */
-  --text: #0f172a;        /* slate-900 */
-  --muted: #475569;       /* slate-600 */
-  --border: #e2e8f0;      /* slate-200 */
-  --accent: #2563eb;      /* blue-600 */
-  --accent-contrast: #ffffff;
-  --card: #ffffff;
-  --shadow: 0 8px 30px rgba(2, 6, 23, 0.08);
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg: #0b1220;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --border: #1f2937;
-    --accent: #60a5fa;
-    --accent-contrast: #0b1220;
-    --card: #0f172a;
-    --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-  }
-}
-
-/* Reset-ish */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body{
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
-  text-rendering: optimizeLegibility;
-}
-img{ max-width: 100%; height: auto; display: block; }
-a{ color: var(--accent); text-decoration: none; }
-a:hover{ text-decoration: underline; }
-menu, ul, ol{ list-style: none; padding: 0; margin: 0; }
-hr{
-  border: 0;
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--border), transparent);
-}
-
-/* Layout */
-header, main, footer{
-  width: min(960px, 92vw);
-  margin-inline: auto;
-}
-header{ padding: 2rem 0 1rem; }
-main{ padding: 1rem 0 2rem; }
-footer{ padding: 2rem 0; color: var(--muted); font-size: 0.95rem; }
-
-/* Title */
-h1{
-  margin: 0 0 0.75rem;
-  font-size: clamp(1.8rem, 2.6vw + 1rem, 2.6rem);
-  letter-spacing: 0.5px;
-}
-h1 sup{
-  font-size: 0.55em;
-  vertical-align: top;
-  position: relative;
-  top: -0.2em;
-  opacity: 0.7;
-}
-
-/* Nav */
-nav{
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-}
-nav menu{
-  display: flex;
-  gap: 0.25rem;
-  padding: 0.35rem;
-  flex-wrap: wrap;
-}
-nav li a{
-  display: inline-block;
-  padding: 0.6rem 0.9rem;
-  border-radius: 10px;
-  color: var(--text);
-  text-decoration: none;
-  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease;
-}
-nav li a:hover,
-nav li a:focus-visible{
-  background: color-mix(in oklab, var(--accent) 14%, var(--card));
-  outline: none;
-  transform: translateY(-1px);
-}
-nav li a:active{ transform: translateY(0); }
-
-/* Highlight current page — this file is for about.html */
-nav a.active{
-  background: var(--accent);
-  color: var(--accent-contrast) !important;
-}
-
-/* Picture box */
-.picture-box{
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto 1.25rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
-}
-.picture-box img{
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-/* Paragraphs */
-main p{
-  margin: 0 0 1rem;
-  color: var(--text);
-}
-main p + p{ margin-top: 0.5rem; }
-main p:last-child{ margin-bottom: 0; }
+/*
+   SidePot — about.css (About)
+   Page-specific overrides only; shared base lives in app.css.
+*/
 
 /* Quote block */
 #quote{
   margin: 1.5rem 0 0;
-  padding: 1rem 1.1rem 1rem 1.1rem;
-  border-left: 4px solid var(--accent);
-  background: color-mix(in oklab, var(--accent) 7%, var(--card));
+  padding: 1rem 1.1rem;
+  border-left: 4px solid #2563eb;
+  background: rgba(37, 99, 235, .07);
   border-radius: 8px;
 }
-#quote > div:first-child{
-  font-weight: 600;
-}
+#quote > div:first-child{ font-weight: 600; }
 #quote > div:last-child{
-  color: var(--muted);
-  margin-top: 0.35rem;
+  color: #64748b;
+  margin-top: .35rem;
   font-style: italic;
 }
 
-/* Footer */
-.text-reset{ color: inherit; }
-footer a{ color: var(--accent); }
-footer a:hover{ text-decoration: underline; }
+.dog-fact{ max-width: 640px; }
 
-/* Accessibility focus ring */
-:focus-visible{
-  outline: 3px solid color-mix(in oklab, var(--accent) 60%, transparent);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-/* Small screens */
 @media (max-width: 600px){
-  nav li a{ padding: 0.55rem 0.8rem; }
   #quote{ padding: 0.9rem; }
 }
