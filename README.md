@@ -68,6 +68,23 @@ I am going to use the required technologies in the following ways:
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
 
+## WebSocket deliverable
+
+For this deliverable I used WebSocket to broadcast anonymized savings events to every connected client in real time.
+
+- [x] **Backend listens for WebSocket connection** - [service/peerProxy.js](./service/peerProxy.js) attaches a `WebSocketServer` (from the `ws` package) to the HTTP server on the `/ws` path, with ping/pong keepalive to drop dead connections.
+- [x] **Frontend makes WebSocket connection** - The dashboard's `LiveFeedPanel` in [Dashboard.jsx](./src/dashboard/Dashboard.jsx) opens `wss://<host>/ws` in a `useEffect` (closing it on unmount) and renders connection status.
+- [x] **Data sent over WebSocket connection** - When any user records a contribution (`POST /api/contributions`), the service broadcasts a `savings_event` with the amount to all connected clients.
+- [x] **WebSocket data displayed in the application interface** - Each event appears in the dashboard's live feed as "Someone just set aside $X", updating in real time without a refresh.
+
+## DB/Login deliverable
+
+For this deliverable I persist users and application data in MongoDB Atlas, and restrict application functionality to authenticated users.
+
+- [x] **Stores data in MongoDB** - [service/database.js](./service/database.js) connects to an Atlas cluster and stores planner items and contributions in per-user collections; lists come back sorted from the database.
+- [x] **Stores credentials in MongoDB** - Registration stores the user's email with a bcrypt password hash (never the plain password) in the `user` collection; login verifies against the hash and rotates an httpOnly, secure auth-token cookie that is also persisted on the user document.
+- [x] **Restricts application functionality based upon authentication** - The planner and contributions endpoints sit behind a `verifyAuth` middleware that resolves the cookie token to a user in the database (401 otherwise), and the frontend's `PrivateRoute` keeps unauthenticated visitors on the login page.
+
 ## Service deliverable
 
 For this deliverable I added a Node.js/Express backend that serves the frontend and provides the application's API.
