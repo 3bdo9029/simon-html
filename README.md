@@ -68,6 +68,13 @@ I am going to use the required technologies in the following ways:
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
 
+## React part 2
+
+For this deliverable I made the application fully reactive with React hooks, implementing every feature or mocking it out where the backend service is not deployed yet.
+
+- [x] **All functionality implemented or mocked out** - Login/register works against `/api/auth/*` and falls back to a mocked local session (persisted in `localStorage`) until the service milestone; `/Dashboard`, `/Planner`, and `/Contributions` are protected routes that redirect unauthenticated visitors to the login page via a `PrivateRoute` component. Contributions load from `/api/contributions` in a `useEffect` and fall back to `localStorage`, so recorded contributions survive a refresh; adding a row updates state and attempts a `POST`. CSV export generates a download link managed by React state (no direct DOM manipulation). The dashboard's plan picker and quarterly tax estimator are controlled inputs — the estimator computes the set-aside from income and percentage, and the plan choice persists. The live WebSocket feed in [Dashboard.jsx](./src/dashboard/Dashboard.jsx) connects with cleanup on unmount, and [DogFact.jsx](./src/about/DogFact.jsx) calls a third-party API.
+- [x] **Hooks** - `useState` drives auth state, panel/menu visibility, forms, the estimator, and the contributions table; `useEffect` handles the auth check on load, data fetching with fallback, the WebSocket lifecycle (with a cleanup function), object-URL cleanup for CSV export, and the third-party dog-fact fetch.
+
 ## React part1
 
 For this deliverable I converted the application into a React single page application bundled by Vite, with client-side routing between components.

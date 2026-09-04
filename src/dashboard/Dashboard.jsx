@@ -81,6 +81,45 @@ export function Dashboard() {
   const [status, setStatus] = useState('Connecting…');
   const [events, setEvents] = useState([]);
 
+  // Pick-a-plan state (persisted locally until the service milestone)
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    try {
+      return localStorage.getItem('sidepot-plan') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [planStatus, setPlanStatus] = useState('');
+
+  function handleSavePlan() {
+    if (!selectedPlan) {
+      setPlanStatus('Pick a plan first.');
+      return;
+    }
+    try {
+      localStorage.setItem('sidepot-plan', selectedPlan);
+    } catch {
+      // ignore
+    }
+    setPlanStatus(`Saved: ${selectedPlan}`);
+  }
+
+  // Quarterly estimator state
+  const [quarter, setQuarter] = useState('Q1');
+  const [income, setIncome] = useState('');
+  const [pct, setPct] = useState('');
+  const [estimate, setEstimate] = useState(null);
+
+  function handleEstimate() {
+    const inc = Number(income);
+    const p = Number(pct);
+    if (!inc || inc <= 0 || !p || p <= 0) {
+      setEstimate(null);
+      return;
+    }
+    setEstimate(Math.round(inc * (p / 100)));
+  }
+
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
@@ -178,18 +217,40 @@ export function Dashboard() {
       >
         <div className="inset">
           <label className="pill">
-            <input type="radio" name="plan" value="solo401k" /> Solo 401(k)
+            <input
+              type="radio"
+              name="plan"
+              value="Solo 401(k)"
+              checked={selectedPlan === 'Solo 401(k)'}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            />{' '}
+            Solo 401(k)
           </label>
           <label className="pill">
-            <input type="radio" name="plan" value="sep" /> SEP IRA
+            <input
+              type="radio"
+              name="plan"
+              value="SEP IRA"
+              checked={selectedPlan === 'SEP IRA'}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            />{' '}
+            SEP IRA
           </label>
           <label className="pill">
-            <input type="radio" name="plan" value="roth" /> Roth IRA
+            <input
+              type="radio"
+              name="plan"
+              value="Roth IRA"
+              checked={selectedPlan === 'Roth IRA'}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            />{' '}
+            Roth IRA
           </label>
         </div>
         <div className="actions">
-          <button>Save selection</button>
+          <button onClick={handleSavePlan}>Save selection</button>
         </div>
+        {planStatus && <p className="live-status">{planStatus}</p>}
       </DashSection>
 
       <DashSection
@@ -201,7 +262,7 @@ export function Dashboard() {
         <div className="inset">
           <label className="field">
             Quarter{' '}
-            <select>
+            <select value={quarter} onChange={(e) => setQuarter(e.target.value)}>
               <option>Q1</option>
               <option>Q2</option>
               <option>Q3</option>
@@ -209,15 +270,27 @@ export function Dashboard() {
             </select>
           </label>
           <label className="field">
-            Estimated net income <input type="number" placeholder="e.g., 24000" />
+            Estimated net income{' '}
+            <input
+              type="number"
+              placeholder="e.g., 24000"
+              value={income}
+              onChange={(e) => setIncome(e.target.value)}
+            />
           </label>
           <label className="field">
-            % set-aside <input type="number" placeholder="e.g., 30" />
+            % set-aside{' '}
+            <input type="number" placeholder="e.g., 30" value={pct} onChange={(e) => setPct(e.target.value)} />
           </label>
         </div>
         <div className="actions">
-          <button>Estimate</button>
+          <button onClick={handleEstimate}>Estimate</button>
         </div>
+        {estimate !== null && (
+          <p className="live-status">
+            Set aside ${estimate.toLocaleString()} for {quarter}.
+          </p>
+        )}
       </DashSection>
 
       <DashSection

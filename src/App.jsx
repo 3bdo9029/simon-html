@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import './app.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 
 import { About } from './about/About.jsx';
 import { Contributions } from './contributions/Contributions.jsx';
 import { Dashboard } from './dashboard/Dashboard.jsx';
 import { Index } from './index/Index.jsx';
 import { Planner } from './planner/Planner.jsx';
+
+// Redirects unauthenticated visitors back to the login page
+function PrivateRoute({ currentUser, children }) {
+  return currentUser ? children : <Navigate to="/" replace />;
+}
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -17,19 +22,31 @@ export default function App() {
   // Check if already authenticated when the app loads
   useEffect(() => {
     async function checkAuth() {
+      let authenticated = false;
       try {
         const res = await fetch('/api/auth/me');
         if (res.ok) {
           const body = await res.json();
           if (body.authenticated) {
             setCurrentUser(body.username);
+            authenticated = true;
           }
         }
       } catch (err) {
         console.error('Error calling /api/auth/me', err);
-      } finally {
-        setAuthChecked(true);
       }
+      if (!authenticated) {
+        // Mocked session until the service milestone: restore from localStorage
+        try {
+          const saved = localStorage.getItem('sidepot-user');
+          if (saved) {
+            setCurrentUser(saved);
+          }
+        } catch {
+          // localStorage unavailable — stay logged out
+        }
+      }
+      setAuthChecked(true);
     }
 
     checkAuth();
@@ -42,6 +59,11 @@ export default function App() {
       });
     } catch (err) {
       console.error('Error during logout', err);
+    }
+    try {
+      localStorage.removeItem('sidepot-user');
+    } catch {
+      // ignore
     }
     setCurrentUser(null);
   }
@@ -104,9 +126,30 @@ export default function App() {
         <main className="p-3">
           <Routes>
             <Route path="/" element={<Index currentUser={currentUser} setCurrentUser={setCurrentUser} />} />
-            <Route path="/Dashboard" element={<Dashboard />} />
-            <Route path="/Planner" element={<Planner currentUser={currentUser} />} />
-            <Route path="/Contributions" element={<Contributions />} />
+            <Route
+              path="/Dashboard"
+              element={
+                <PrivateRoute currentUser={currentUser}>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Planner"
+              element={
+                <PrivateRoute currentUser={currentUser}>
+                  <Planner currentUser={currentUser} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/Contributions"
+              element={
+                <PrivateRoute currentUser={currentUser}>
+                  <Contributions />
+                </PrivateRoute>
+              }
+            />
             <Route path="/About" element={<About />} />
           </Routes>
         </main>
