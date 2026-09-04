@@ -106,7 +106,7 @@ This commit includes the foundational HTML structure for the **SidePot** applica
 
 ### ✅ Rubric Checklist
 
-- [x] **HTML pages** - Four pages, one for each component of the application: `index.html` (login / landing), `dashboard.html`, `planner.html`, and `contributions.html`.
+- [x] **HTML pages** - Four pages, one for each component of the application: [index.html](./index.html) (login / landing), [dashboard.html](./dashboard.html), [planner.html](./planner.html), and [contributions.html](./contributions.html).
 - [x] **Proper HTML tags** - Every page uses `<!DOCTYPE html>`, `<html lang="en">`, `<head>`, and `<body>`, with semantic structure throughout: `<header>`, `<nav>`, `<main>`, `<section>`, `<form>`, `<table>`, and `<footer>`.
 - [x] **Character set and viewport** - Each page declares `<meta charset="utf-8">` and `<meta name="viewport" content="width=device-width, initial-scale=1">`.
 - [x] **Navigation / links** - A shared `<nav>` links every page to the other three, and the footer links out to the GitHub repository for this project.
