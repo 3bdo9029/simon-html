@@ -36,7 +36,7 @@ User → Frontend (React) → Backend (Express):
 1. Register/Login (JWT in HTTP-only cookie)
 2. Planner: POST `/api/planner/estimate` → returns `{percent, monthlySetAside}`
 3. Contributions: GET/POST/DELETE `/api/contributions`
-4. FX Helper: GET `/api/fx?base=EUR&amount=1000` (server calls free FX API)
+4. Dog Fact: GET `/api/dogfact` (server calls the free [Dog API](https://dogapi.dog/docs/api-v2))
 5. WebSocket: server emits `savings_event` → clients update live ticker
 
 ---
@@ -47,7 +47,7 @@ User → Frontend (React) → Backend (Express):
 - **Plan picker** with concise notes: Solo 401(k), SEP IRA, Roth IRA
 - **Contribution tracker** for taxes and retirement accounts
 - **Live savings feed** (WebSocket): “Someone just set aside $X”
-- **3rd-party API**: FX conversion helper for foreign invoices (server-side proxy)
+- **3rd-party API**: Random dog fact from the [Dog API](https://dogapi.dog) (`https://dogapi.dog/api/v2/facts`), fetched through a server-side proxy
 
 ---
 
@@ -63,7 +63,7 @@ I am going to use the required technologies in the following ways:
   - **Auth**: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`
   - **Planner**: `POST /api/planner/estimate` (deterministic classroom formula), `GET /api/planner/limits` (static cards)
   - **Contributions**: `GET /api/contributions`, `POST /api/contributions`, `DELETE /api/contributions/:id`
-  - **3rd-party API**: `GET /api/fx?base=EUR&amount=1000` (server fetch to free FX API; demonstrates a service I didn’t write)
+  - **3rd-party API**: `GET /api/dogfact` (server fetch to the free [Dog API](https://dogapi.dog/docs/api-v2) at `https://dogapi.dog/api/v2/facts`; demonstrates a service I didn’t write)
 - **DB/Login** – Persist users (with bcrypt hash), profiles, and contributions (MongoDB/PostgreSQL, or a simple JSON DB for class). Register & login users; restrict contribution routes to authenticated users.
 - **WebSocket** – Broadcast `savings_event` when contributions are added so all connected clients update their live ticker in real time.
 
@@ -94,6 +94,26 @@ For this deliverable I added a Node.js/Express backend that serves the frontend 
 - [x] **Calls third party service endpoints** - The backend proxies dogapi.dog via `GET /api/dogfact`; the About page's [DogFact.jsx](./src/about/DogFact.jsx) calls our own endpoint instead of the third party directly.
 - [x] **Backend provides service endpoints** - Auth (`POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` with bcrypt-hashed passwords and httpOnly cookie tokens), plus authenticated `GET/POST /api/planner` and `GET/POST /api/contributions` (in-memory until the database milestone).
 - [x] **Frontend calls service endpoints** - Login/register in [Index.jsx](./src/index/Index.jsx) (mocks removed), session restore in [App.jsx](./src/App.jsx), planner items in [Planner.jsx](./src/planner/Planner.jsx), and contributions in [Contributions.jsx](./src/contributions/Contributions.jsx) all use `fetch` against the service.
+
+
+## Third-party API: Dog API (dogapi.dog)
+
+The third-party service used by SidePot is the free, no-key [Dog API](https://dogapi.dog) ([docs](https://dogapi.dog/docs/api-v2)). The About page shows a random dog fact pulled from it.
+
+- **Upstream endpoint** - `GET https://dogapi.dog/api/v2/facts` returns a JSON:API document; the fact text is at `data[0].attributes.body`.
+- **Server-side proxy** - [service/index.js](./service/index.js) exposes `GET /api/dogfact`, fetches the upstream endpoint, and responds with `{ "fact": "..." }`. If dogapi.dog is unreachable or returns a non-2xx status, the proxy answers `502 { "msg": "Could not reach the dog fact service" }`.
+- **Frontend** - [DogFact.jsx](./src/about/DogFact.jsx) calls `/api/dogfact` in a `useEffect` (aborting the request on unmount) and renders the fact, falling back to a friendly message on error.
+
+Example:
+
+```bash
+curl https://dogapi.dog/api/v2/facts
+# {"data":[{"id":"...","type":"fact","attributes":{"body":"Dogs have three eyelids..."}}]}
+
+curl http://localhost:4000/api/dogfact
+# {"fact":"Dogs have three eyelids..."}
+```
+
 
 ## React part 2
 
